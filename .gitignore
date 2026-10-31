@@ -1,23 +1,41 @@
-/.phpunit.cache
-/node_modules
-/public/build
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build output
+/public/build/
 /public/hot
 /public/storage
+
+# Environment files - never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Local databases and keys
+/database/*.sqlite
 /storage/*.key
 /storage/pail
-/vendor
-.env
-.env.backup
-.env.production
-.phpactor.json
+
+# Testing and tooling
+/.phpunit.cache/
 .phpunit.result.cache
+.phpactor.json
+/coverage/
+/auth.json
+
+# IDE and OS files
+.idea/
+.vscode/
+.nova/
+.fleet/
+.zed/
+.DS_Store
+Thumbs.db
+
+# Logs and local artifacts
+*.log
 Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-/auth.json
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
