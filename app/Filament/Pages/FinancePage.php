@@ -2,12 +2,20 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Invoice;
-use App\Models\Payment;
+use App\Filament\Widgets\FinanceOverdueInvoicesTable;
+use App\Filament\Widgets\FinanceRecentPaymentsTable;
+use App\Filament\Widgets\FinanceStatsOverview;
+use App\Filament\Widgets\FinanceUpcomingRenewalsTable;
+use App\Models\Customer;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Pages\Page;
 
 class FinancePage extends Page
 {
+    use HasFiltersForm;
+
     protected static ?string $navigationIcon = 'heroicon-o-chart-pie';
 
     protected static ?string $navigationGroup = 'Finance';
@@ -18,13 +26,43 @@ class FinancePage extends Page
 
     protected static string $view = 'filament.pages.finance-page';
 
-    protected function getViewData(): array
+    public function filtersForm(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Section::make()
+                ->columns(3)
+                ->compact()
+                ->schema([
+                    Forms\Components\Select::make('customerId')
+                        ->label('Customer')
+                        ->options(Customer::pluck('name', 'id'))
+                        ->searchable()
+                        ->placeholder('All Customers'),
+
+                    Forms\Components\DatePicker::make('startDate')
+                        ->label('Start Date')
+                        ->default(now()->startOfMonth()),
+
+                    Forms\Components\DatePicker::make('endDate')
+                        ->label('End Date')
+                        ->default(now()->endOfMonth()),
+                ]),
+        ]);
+    }
+
+    protected function getHeaderWidgets(): array
     {
         return [
-            'invoiced' => (float) Invoice::query()->whereNot('status', 'cancelled')->sum('total'),
-            'collected' => (float) Payment::query()->sum('amount'),
-            'outstanding' => (float) Invoice::query()->outstanding()->sum('total'),
-            'overdueCount' => Invoice::query()->overdue()->count(),
+            FinanceStatsOverview::class,
+        ];
+    }
+
+    public function getFooterWidgets(): array
+    {
+        return [
+            FinanceOverdueInvoicesTable::class,
+            FinanceRecentPaymentsTable::class,
+            FinanceUpcomingRenewalsTable::class,
         ];
     }
 }
