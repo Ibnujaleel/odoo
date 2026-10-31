@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\TaxType;
 use App\Models\Tax;
 
 /**
@@ -13,7 +14,7 @@ use App\Models\Tax;
  *  - percentage: net × rate / 100
  *  - fixed: flat rate amount
  *
- * Returns 0.0 when no tax is provided.
+ * Returns 0.0 when no tax is provided or tax is inactive.
  * All results are rounded to 2 decimal places.
  */
 class TaxCalculator
@@ -27,18 +28,18 @@ class TaxCalculator
      */
     public function calculate(float $net, ?Tax $tax): float
     {
-        if ($tax === null) {
+        if ($tax === null || ! $tax->is_active) {
             return 0.0;
         }
 
-        if (! $tax->is_active) {
-            return 0.0;
-        }
+        $type = $tax->type instanceof TaxType ? $tax->type->value : (string) $tax->type;
 
-        return match ($tax->type) {
-            'percentage' => round($net * $tax->rate / 100, 2),
-            'fixed'      => round((float) $tax->rate, 2),
+        $amount = match ($type) {
+            'percentage' => $net * ((float) $tax->rate / 100),
+            'fixed'      => (float) $tax->rate,
             default      => 0.0,
         };
+
+        return round($amount, 2);
     }
 }

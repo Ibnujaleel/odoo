@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\BillingPeriod;
+use App\Enums\DiscountAppliesTo;
+use App\Enums\DiscountType;
+use App\Enums\PlanStatus;
+use App\Enums\ProductType;
+use App\Enums\TaxType;
 use App\Models\Discount;
 use App\Models\Plan;
 use App\Models\Product;
@@ -34,7 +40,7 @@ class CatalogueSeeder extends Seeder
 
         $odooErp = Product::create([
             'name'        => 'Odoo ERP',
-            'type'        => 'subscription',
+            'type'        => ProductType::Subscription->value,
             'sales_price' => 2500,
             'cost_price'  => 1800,
             'notes'       => 'Full-featured ERP platform with modules for accounting, inventory, HR and more.',
@@ -56,7 +62,7 @@ class CatalogueSeeder extends Seeder
 
         $crm = Product::create([
             'name'        => 'CRM Pro',
-            'type'        => 'subscription',
+            'type'        => ProductType::Subscription->value,
             'sales_price' => 800,
             'cost_price'  => 450,
             'notes'       => 'Customer relationship management with pipeline, forecasting and email integration.',
@@ -72,7 +78,7 @@ class CatalogueSeeder extends Seeder
 
         $hosting = Product::create([
             'name'        => 'Cloud Hosting',
-            'type'        => 'service',
+            'type'        => ProductType::Service->value,
             'sales_price' => 150,
             'cost_price'  => 60,
             'notes'       => 'Managed cloud hosting with auto-scaling and daily backups.',
@@ -94,7 +100,7 @@ class CatalogueSeeder extends Seeder
 
         $support = Product::create([
             'name'        => 'Priority Support',
-            'type'        => 'service',
+            'type'        => ProductType::Service->value,
             'sales_price' => 200,
             'cost_price'  => 80,
             'notes'       => '24/7 priority support with 1-hour SLA for critical issues.',
@@ -103,7 +109,7 @@ class CatalogueSeeder extends Seeder
 
         $analytics = Product::create([
             'name'        => 'Analytics Dashboard',
-            'type'        => 'addon',
+            'type'        => ProductType::Addon->value,
             'sales_price' => 350,
             'cost_price'  => 120,
             'notes'       => 'Advanced analytics and reporting dashboard with custom KPIs.',
@@ -126,7 +132,7 @@ class CatalogueSeeder extends Seeder
         $monthlyPlan = Plan::create([
             'name'           => 'Standard Monthly',
             'price'          => 999,
-            'billing_period' => 'monthly',
+            'billing_period' => BillingPeriod::Monthly->value,
             'min_quantity'   => 1,
             'start_date'     => Carbon::today()->toDateString(),
             'end_date'       => Carbon::today()->addYear()->toDateString(),
@@ -134,13 +140,13 @@ class CatalogueSeeder extends Seeder
             'closable'       => true,
             'pausable'       => true,
             'renewable'      => true,
-            'status'         => 'active',
+            'status'         => PlanStatus::Active->value,
         ]);
 
         $yearlyPlan = Plan::create([
             'name'           => 'Enterprise Annual',
             'price'          => 9990,
-            'billing_period' => 'yearly',
+            'billing_period' => BillingPeriod::Yearly->value,
             'min_quantity'   => 5,
             'start_date'     => Carbon::today()->toDateString(),
             'end_date'       => Carbon::today()->addYears(3)->toDateString(),
@@ -148,13 +154,13 @@ class CatalogueSeeder extends Seeder
             'closable'       => true,
             'pausable'       => false,
             'renewable'      => true,
-            'status'         => 'active',
+            'status'         => PlanStatus::Active->value,
         ]);
 
         $trialPlan = Plan::create([
             'name'           => 'Trial Daily',
             'price'          => 0,
-            'billing_period' => 'daily',
+            'billing_period' => BillingPeriod::Daily->value,
             'min_quantity'   => 1,
             'start_date'     => Carbon::today()->toDateString(),
             'end_date'       => Carbon::today()->addDays(14)->toDateString(),
@@ -162,7 +168,7 @@ class CatalogueSeeder extends Seeder
             'closable'       => true,
             'pausable'       => false,
             'renewable'      => false,
-            'status'         => 'active',
+            'status'         => PlanStatus::Active->value,
         ]);
 
         /*
@@ -173,14 +179,14 @@ class CatalogueSeeder extends Seeder
 
         $gst = Tax::create([
             'name'      => 'GST 18%',
-            'type'      => 'percentage',
+            'type'      => TaxType::Percentage->value,
             'rate'      => 18,
             'is_active' => true,
         ]);
 
         $serviceFee = Tax::create([
             'name'      => 'Platform Service Fee',
-            'type'      => 'fixed',
+            'type'      => TaxType::Fixed->value,
             'rate'      => 49.99,
             'is_active' => true,
         ]);
@@ -193,7 +199,7 @@ class CatalogueSeeder extends Seeder
 
         Discount::create([
             'name'            => 'Launch Offer 15%',
-            'type'            => 'percentage',
+            'type'            => DiscountType::Percentage->value,
             'value'           => 15,
             'min_purchase'    => 500,
             'min_quantity'    => null,
@@ -201,7 +207,7 @@ class CatalogueSeeder extends Seeder
             'end_date'        => Carbon::today()->addMonths(3)->toDateString(),
             'usage_limit'     => 100,
             'times_used'      => 0,
-            'applies_to'      => 'product',
+            'applies_to'      => DiscountAppliesTo::Product->value,
             'product_id'      => $odooErp->id,
             'subscription_id' => null,
             'is_active'       => true,
@@ -209,7 +215,7 @@ class CatalogueSeeder extends Seeder
 
         Discount::create([
             'name'            => 'Flat ₹200 Off',
-            'type'            => 'fixed',
+            'type'            => DiscountType::Fixed->value,
             'value'           => 200,
             'min_purchase'    => 1000,
             'min_quantity'    => 2,
@@ -217,7 +223,7 @@ class CatalogueSeeder extends Seeder
             'end_date'        => Carbon::today()->addMonth()->toDateString(),
             'usage_limit'     => 50,
             'times_used'      => 0,
-            'applies_to'      => 'product',
+            'applies_to'      => DiscountAppliesTo::Product->value,
             'product_id'      => $crm->id,
             'subscription_id' => null,
             'is_active'       => true,

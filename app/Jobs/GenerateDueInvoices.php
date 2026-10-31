@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Subscription;
 use App\Services\BillingService;
 use Carbon\Carbon;
@@ -19,9 +20,6 @@ use Illuminate\Support\Facades\Log;
  *
  * Processes in chunks of 200. Each subscription is wrapped in its own
  * try/catch so that one failure does not prevent the rest from billing.
- *
- * Scheduling: registered in routes/console.php as dailyAt('01:00')
- * (owned by Dev 1 — verify it exists in the scaffold).
  */
 class GenerateDueInvoices implements ShouldQueue
 {
@@ -49,8 +47,9 @@ class GenerateDueInvoices implements ShouldQueue
         ]);
 
         Subscription::query()
-            ->where('status', 'active')
-            ->where('next_billing_date', '<=', $today)
+            ->where('status', SubscriptionStatus::Active->value)
+            ->whereNotNull('next_billing_date')
+            ->whereDate('next_billing_date', '<=', $today)
             ->with(['plan', 'lines.tax', 'lines.product', 'customer'])
             ->chunkById(200, function ($subscriptions) use ($billingService) {
                 foreach ($subscriptions as $subscription) {

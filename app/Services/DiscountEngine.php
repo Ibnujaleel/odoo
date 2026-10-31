@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DiscountAppliesTo;
+use App\Enums\DiscountType;
 use App\Models\Discount;
 use App\Models\Subscription;
 use Carbon\Carbon;
@@ -42,14 +44,14 @@ class DiscountEngine
             ? $subscription->lines
             : $subscription->lines()->get();
 
-        $totalQuantity = $lines->sum('quantity');
-        $totalAmount   = $lines->sum('amount');
+        $totalQuantity = (int) $lines->sum('quantity');
+        $totalAmount   = (float) $lines->sum('amount');
         $productIds    = $lines->pluck('product_id')->unique()->filter()->values();
 
         return Discount::query()
             ->where('is_active', true)
-            ->where('start_date', '<=', $on)
-            ->where('end_date', '>=', $on)
+            ->whereDate('start_date', '<=', $on)
+            ->whereDate('end_date', '>=', $on)
             ->where(function ($query) {
                 $query->whereNull('usage_limit')
                       ->orWhereColumn('times_used', '<', 'usage_limit');
@@ -57,18 +59,22 @@ class DiscountEngine
             ->get()
             ->filter(function (Discount $discount) use ($subscription, $totalQuantity, $totalAmount, $productIds) {
                 // Check min_quantity threshold
-                if ($discount->min_quantity !== null && $totalQuantity < $discount->min_quantity) {
+                if ($discount->min_quantity !== null && $totalQuantity < (int) $discount->min_quantity) {
                     return false;
                 }
 
                 // Check min_purchase threshold
-                if ($discount->min_purchase !== null && $totalAmount < $discount->min_purchase) {
+                if ($discount->min_purchase !== null && $totalAmount < (float) $discount->min_purchase) {
                     return false;
                 }
 
+                $appliesTo = $discount->applies_to instanceof DiscountAppliesTo
+                    ? $discount->applies_to->value
+                    : (string) $discount->applies_to;
+
                 // Check scope match
-                return match ($discount->applies_to) {
-                    'subscription' => $discount->subscription_id === $subscription->id,
+                return match ($appliesTo) {
+                    'subscription' => (int) $discount->subscription_id === (int) $subscription->id,
                     'product'      => $productIds->contains($discount->product_id),
                     default        => false,
                 };
@@ -86,9 +92,13 @@ class DiscountEngine
      */
     public function amountFor(Discount $discount, float $subtotal, int $qty): float
     {
-        return match ($discount->type) {
+        $type = $discount->type instanceof DiscountType
+            ? $discount->type->value
+            : (string) $discount->type;
+
+        return match ($type) {
             'fixed'      => round(min((float) $discount->value, $subtotal), 2),
-            'percentage' => round($subtotal * (float) $discount->value / 100, 2),
+            'percentage' => round($subtotal * ((float) $discount->value / 100), 2),
             default      => 0.0,
         };
     }

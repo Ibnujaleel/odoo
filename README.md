@@ -1,98 +1,59 @@
-### System Architecture Overview
+# Brightloop Subscription Management
 
+Subscription lifecycle, recurring billing and finance reporting for growing teams.
 
-[ Customer Portal / UI ]
-        │
-        ├── Product Discovery & Configuration
-        └── Multi-step Quotation Request Form (Guest / User)
-        │
-        ▼
-[ Backend API & Workflow Engine ]
-        │
-        ├── Request Processing & Validation
-        ├── Price Calculation Engine (Rules & Inventory DB)
-        └── Event Dispatcher (Email Notification / Lead Routing)
-        │
-        ├──► [ Sales Portal / CRM ]
-        │           │
-        │           ├── Lead Management & Activities
-        │           ├── Quotation Builder & CPQ Engine
-        │           └── Discount Approval Routing
-        │
-        └──► [ Customer Acceptance Interface ]
-                    │
-                    ├── Accept / Request Changes / Reject
-                    └── Digital Signature & Timestamp Freeze
-                    │
-                    ▼
-          [ Core Subscription Engine ]
-                    │
-                    ├── Provisioning & Account Mapping
-                    ├── Billing Schedule Engine
-                    └── Finance Notification
+- **Admin/staff panel:** `/admin` (Filament 3)
+- **Customer portal:** `/portal` (Livewire + Tailwind)
+- **Stack:** Laravel 11, PHP 8.3, PostgreSQL, Eloquent, Filament, Spatie Permission, Dompdf, Pest.
 
+See `docs/ARCHITECTURE.md` for the full product and component architecture.
+
+## Local setup (Laravel Sail)
+
+```bash
+cp .env.example .env
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate:fresh --seed
+./vendor/bin/sail npm install && ./vendor/bin/sail npm run build
 ```
 
+Open `http://localhost`. The admin panel is at `http://localhost/admin` and the customer portal at `http://localhost/portal`.
 
-### Component Architecture & Responsibilities
+## Demo logins
 
-#### 1. Customer Portal (Frontend)
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | admin@brightloop.test | Brightloop@123 |
+| Staff | staff@brightloop.test | Brightloop@123 |
+| Customer | customer@brightloop.test | Brightloop@123 |
 
-* **Product Catalog Module:** Renders product details, variants, features, and base subscription plans sourced directly from the inventory database.
-* **Dynamic Configuration Engine:** Calculates instant indicative pricing client-side based on variant selection, license volume, billing cycle, and add-on modules.
-* **Multi-Step Request Form:**
-* Auto-prefills identity data for authenticated users.
-* Captures contact details, product scope, and special requirements for guest visitors.
+Customers are redirected to `/portal`; admin and staff are redirected to `/admin`.
 
+## Useful commands
 
+```bash
+./vendor/bin/sail artisan migrate:fresh --seed   # reset + 3000-row demo dataset
+./vendor/bin/pint                                # format
+./vendor/bin/pest                                # tests
+./vendor/bin/sail artisan schedule:work          # run the daily billing job locally
+```
 
+## Branches and merge schedule
 
+| Dev | Branch | Area |
+| --- | --- | --- |
+| Dev 1 | `feature/dev1-foundation-shell` | schema, models, auth, RBAC, shared UI, dashboard, integration |
+| Dev 2 | `feature/dev2-catalogue-billing` | catalogue, plans, tax, discounts, billing engine |
+| Dev 3 | `feature/dev3-sales-portal` | customers, quotations, subscriptions, customer portal |
+| Dev 4 | `feature/dev4-finance` | invoices, payments, finance reporting |
 
-#### 2. Backend API & Processing Layer
+Branch from `develop`, one feature branch per developer, open small PRs into `develop` at every milestone. Another teammate reviews; check owned paths only, `pint` and `pest`, and the screen. Run `git fetch origin && git rebase origin/develop` after every merge. `main` is updated only by Dev 1 from `develop` at the end of the day.
 
-* **Quotation Request Service (`/api/quotation-requests`):**
-* Validates request payloads.
-* Generates unique sequence identifier (`REQ-YYYY-XXXXX`).
-* Maps guest details to existing customer accounts if email matches.
+## Demo data
 
+`migrate:fresh --seed` creates roles and three demo users, the catalogue needed by the demo, 3,000 customers, 3,000 subscriptions with lines, 2,500 invoices, and 1,800 payments. The bulk seeder uses chunked inserts so it finishes in a couple of seconds.
 
-* **Notification & Routing Engine:**
-* Auto-assigns leads based on sales territory or rep availability.
-* Fires confirmation triggers to customer and alert triggers to assigned sales staff.
+## Deployment
 
-
-
-
-
-#### 3. Sales Portal & CPQ Module
-
-* **Lead Workspace:** Table and detailed activity view to track interactions, call logs, notes, and request statuses.
-* **Quotation Builder (`/api/quotations`):**
-* Snapshots product rates at the time of offer creation.
-* Enforces discount ceiling thresholds based on sales rep permission levels.
-* Triggers manager approval workflows if discount thresholds are breached.
-* PDF Generator service to generate frozen proposal documents (`QT-YYYY-XXXXX`).
-
-
-
-
-
-#### 4. Offer Review & Acceptance Module
-
-* **Customer Presentation Link:** Secure, tokenized portal for customer review.
-* **Handshake Engine:**
-* **Accept:** Captures audit details (IP, user agent, timestamp, signature hash), locks the quotation version, and triggers subscription conversion.
-* **Modify:** Changes request state back to `Revision Requested` in Sales Workspace.
-* **Reject:** Closes lead as lost and logs rejection reasons.
-
-
-
-
-#### 5. Core Subscription & Billing Layer
-
-* **Subscription Provisioner (`/api/subscriptions/from-quotation/:id`):**
-* Atomically converts accepted quotes into active customer subscriptions.
-* Initializes recurring payment schedules based on agreed billing cycles (Monthly/Yearly).
-* Triggers downstream account provisioning and Finance alerts.
-
-
+Deployment files live in `deployment/`. See `deployment/README.md` for the Docker/Render or Railway + Neon Postgres instructions.

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\BillingPeriod;
+use App\Enums\DiscountAppliesTo;
+use App\Enums\InvoiceStatus;
+use App\Enums\SubscriptionStatus;
 use App\Models\DiscountUsage;
 use App\Models\Invoice;
 use App\Models\InvoiceLine;
@@ -41,8 +45,12 @@ class BillingService
      */
     public function generateFor(Subscription $subscription): ?Invoice
     {
+        $status = $subscription->status instanceof SubscriptionStatus
+            ? $subscription->status->value
+            : (string) $subscription->status;
+
         // Guard: only bill active subscriptions
-        if ($subscription->status !== 'active') {
+        if ($status !== 'active') {
             return null;
         }
 
@@ -55,33 +63,37 @@ class BillingService
 
         // Auto-close check: if the plan has auto_close and end_date has passed,
         // close the subscription instead of billing.
-        if ($plan->auto_close && $plan->end_date && Carbon::parse($plan->end_date)->lt(Carbon::today())) {
+        if ($plan && $plan->auto_close && $plan->end_date && Carbon::parse($plan->end_date)->lt(Carbon::today())) {
             app(SubscriptionStateMachine::class)->transition($subscription, 'closed');
 
             return null;
         }
 
-        $billingPeriodStart = Carbon::parse($subscription->next_billing_date);
-        $billingPeriodEnd   = $this->advanceDate($billingPeriodStart, $plan->billing_period)->subDay();
+        $period = $plan?->billing_period instanceof BillingPeriod
+            ? $plan->billing_period->value
+            : (string) ($plan?->billing_period ?? 'monthly');
 
-        return DB::transaction(function () use ($subscription, $plan, $billingPeriodStart, $billingPeriodEnd) {
+        $billingPeriodStart = Carbon::parse($subscription->next_billing_date);
+        $billingPeriodEnd   = $this->advanceDate($billingPeriodStart, $period)->subDay();
+
+        return DB::transaction(function () use ($subscription, $plan, $period, $billingPeriodStart, $billingPeriodEnd) {
             // Idempotent: firstOrCreate on the unique constraint
             $invoice = Invoice::firstOrCreate(
                 [
-                    'subscription_id'    => $subscription->id,
+                    'subscription_id'      => $subscription->id,
                     'billing_period_start' => $billingPeriodStart->toDateString(),
                 ],
                 [
-                    'number'             => $this->generateInvoiceNumber(),
-                    'customer_id'        => $subscription->customer_id,
-                    'billing_period_end' => $billingPeriodEnd->toDateString(),
-                    'status'             => 'draft',
-                    'subtotal'           => 0,
-                    'discount_total'     => 0,
-                    'tax_total'          => 0,
-                    'total'              => 0,
-                    'amount_paid'        => 0,
-                    'due_date'           => $billingPeriodStart->copy()->addDays(
+                    'number'               => $this->generateInvoiceNumber(),
+                    'customer_id'          => $subscription->customer_id,
+                    'billing_period_end'   => $billingPeriodEnd->toDateString(),
+                    'status'               => InvoiceStatus::Draft->value,
+                    'subtotal'             => 0,
+                    'discount_total'       => 0,
+                    'tax_total'            => 0,
+                    'total'                => 0,
+                    'amount_paid'          => 0,
+                    'due_date'             => $billingPeriodStart->copy()->addDays(
                         $subscription->payment_terms ?? 30
                     )->toDateString(),
                 ]
@@ -92,8 +104,8 @@ class BillingService
                 return $invoice;
             }
 
-            // Load subscription lines with their tax relations
-            $lines = $subscription->lines()->with('tax')->get();
+            // Load subscription lines with their tax and product relations
+            $lines = $subscription->lines()->with(['tax', 'product'])->get();
 
             $subtotal      = 0.0;
             $taxTotal      = 0.0;
@@ -103,9 +115,16 @@ class BillingService
             $applicableDiscounts = $this->discountEngine->applicable($subscription, $billingPeriodStart);
 
             // Per-line discount pool: product-level discounts
-            $productDiscounts = $applicableDiscounts->where('applies_to', 'product');
+            $productDiscounts = $applicableDiscounts->filter(function ($d) {
+                $appliesTo = $d->applies_to instanceof DiscountAppliesTo ? $d->applies_to->value : (string) $d->applies_to;
+                return $appliesTo === 'product';
+            });
+
             // Subscription-level discounts apply after line totals
-            $subscriptionDiscounts = $applicableDiscounts->where('applies_to', 'subscription');
+            $subscriptionDiscounts = $applicableDiscounts->filter(function ($d) {
+                $appliesTo = $d->applies_to instanceof DiscountAppliesTo ? $d->applies_to->value : (string) $d->applies_to;
+                return $appliesTo === 'subscription';
+            });
 
             $invoiceLines = [];
 
@@ -116,14 +135,14 @@ class BillingService
                 // Calculate per-line product discount
                 $lineDiscount = 0.0;
                 foreach ($productDiscounts as $discount) {
-                    if ($discount->product_id === $line->product_id) {
+                    if ((int) $discount->product_id === (int) $line->product_id) {
                         $lineDiscount += $this->discountEngine->amountFor($discount, $lineSubtotal, (int) $line->quantity);
                     }
                 }
                 $discountTotal += $lineDiscount;
 
                 // Tax is calculated on the net (after product-level discount)
-                $taxableAmount = $lineSubtotal - $lineDiscount;
+                $taxableAmount = max(0, $lineSubtotal - $lineDiscount);
                 $lineTax = $this->taxCalculator->calculate($taxableAmount, $line->tax);
                 $taxTotal += $lineTax;
 
@@ -136,18 +155,22 @@ class BillingService
                     'discount_amount' => $lineDiscount,
                     'tax_amount'      => $lineTax,
                     'amount'          => round($taxableAmount + $lineTax, 2),
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
                 ];
             }
 
             // Apply subscription-level discounts to the remaining subtotal
-            $netAfterProductDiscounts = $subtotal - $discountTotal;
+            $netAfterProductDiscounts = max(0, $subtotal - $discountTotal);
             foreach ($subscriptionDiscounts as $discount) {
                 $subDiscount    = $this->discountEngine->amountFor($discount, $netAfterProductDiscounts, 0);
                 $discountTotal += $subDiscount;
             }
 
             // Insert invoice lines
-            InvoiceLine::insert($invoiceLines);
+            if (! empty($invoiceLines)) {
+                InvoiceLine::insert($invoiceLines);
+            }
 
             // Update invoice totals
             $total = round($subtotal - $discountTotal + $taxTotal, 2);
@@ -170,7 +193,7 @@ class BillingService
 
             // Advance next_billing_date
             $subscription->update([
-                'next_billing_date' => $this->advanceDate($billingPeriodStart, $plan->billing_period)->toDateString(),
+                'next_billing_date' => $this->advanceDate($billingPeriodStart, $period)->toDateString(),
             ]);
 
             return $invoice->fresh();

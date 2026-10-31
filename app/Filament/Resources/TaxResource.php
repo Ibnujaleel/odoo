@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\TaxType;
 use App\Filament\Resources\TaxResource\Pages;
 use App\Models\Tax;
 use Filament\Forms;
@@ -11,7 +12,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class TaxResource extends Resource
 {
@@ -25,17 +25,17 @@ class TaxResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canEdit(Model $record): bool
+    public static function canEdit($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canDelete(Model $record): bool
+    public static function canDelete($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     public static function form(Form $form): Form
@@ -52,21 +52,18 @@ class TaxResource extends Resource
 
                         Forms\Components\Select::make('type')
                             ->required()
-                            ->options([
-                                'percentage' => 'Percentage',
-                                'fixed'      => 'Fixed Amount',
-                            ])
+                            ->options(collect(TaxType::cases())->mapWithKeys(fn (TaxType $t) => [$t->value => $t->label()]))
                             ->native(false)
                             ->live()
-                            ->helperText('Percentage is calculated on the net amount. Fixed is a flat fee.'),
+                            ->helperText('Percentage is calculated on net amount. Fixed is flat fee.'),
 
                         Forms\Components\TextInput::make('rate')
                             ->required()
                             ->numeric()
                             ->minValue(0)
-                            ->maxValue(fn (Forms\Get $get) => $get('type') === 'percentage' ? 100 : null)
-                            ->suffix(fn (Forms\Get $get) => $get('type') === 'percentage' ? '%' : '₹')
-                            ->helperText(fn (Forms\Get $get) => $get('type') === 'percentage'
+                            ->maxValue(fn (Forms\Get $get) => $get('type') === TaxType::Percentage->value || $get('type') === 'percentage' ? 100 : null)
+                            ->suffix(fn (Forms\Get $get) => $get('type') === TaxType::Percentage->value || $get('type') === 'percentage' ? '%' : '$')
+                            ->helperText(fn (Forms\Get $get) => $get('type') === TaxType::Percentage->value || $get('type') === 'percentage'
                                 ? 'Percentage rate (0–100). E.g. 18 for 18%.'
                                 : 'Fixed amount in currency. E.g. 49.99.'
                             ),
@@ -89,7 +86,8 @@ class TaxResource extends Resource
 
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state) => $state instanceof TaxType ? $state->label() : ucfirst((string) $state))
+                    ->color(fn ($state): string => match ($state instanceof TaxType ? $state->value : (string) $state) {
                         'percentage' => 'primary',
                         'fixed'      => 'info',
                         default      => 'gray',
@@ -97,13 +95,14 @@ class TaxResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('rate')
-                    ->formatStateUsing(fn (Tax $record) => $record->type === 'percentage'
+                    ->formatStateUsing(fn (Tax $record) => ($record->type instanceof TaxType ? $record->type === TaxType::Percentage : $record->type === 'percentage')
                         ? number_format((float) $record->rate, 2) . '%'
-                        : '₹' . number_format((float) $record->rate, 2)
+                        : '$' . number_format((float) $record->rate, 2)
                     )
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
+                    ->label('Active')
                     ->boolean()
                     ->sortable(),
 
@@ -114,25 +113,18 @@ class TaxResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
-                    ->options([
-                        'percentage' => 'Percentage',
-                        'fixed'      => 'Fixed',
-                    ]),
+                    ->options(collect(TaxType::cases())->mapWithKeys(fn (TaxType $t) => [$t->value => $t->label()])),
 
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active status'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()?->hasRole('admin')),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('name')
@@ -149,8 +141,8 @@ class TaxResource extends Resource
         return [
             'index'  => Pages\ListTaxes::route('/'),
             'create' => Pages\CreateTax::route('/create'),
+            'view'   => Pages\ViewTax::route('/{record}'),
             'edit'   => Pages\EditTax::route('/{record}/edit'),
         ];
     }
 }
-

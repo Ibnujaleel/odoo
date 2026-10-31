@@ -12,7 +12,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class QuotationTemplateResource extends Resource
 {
@@ -26,17 +25,17 @@ class QuotationTemplateResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canEdit(Model $record): bool
+    public static function canEdit($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canDelete(Model $record): bool
+    public static function canDelete($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     public static function form(Form $form): Form
@@ -60,6 +59,7 @@ class QuotationTemplateResource extends Resource
                             ->helperText('The subscription plan linked to quotations from this template.'),
 
                         Forms\Components\TextInput::make('validity_days')
+                            ->label('Validity (days)')
                             ->required()
                             ->numeric()
                             ->minValue(1)
@@ -92,7 +92,7 @@ class QuotationTemplateResource extends Resource
                                             ->get()
                                             ->mapWithKeys(fn ($v) => [
                                                 $v->id => "{$v->attribute}: {$v->value}" .
-                                                    ($v->extra_price > 0 ? " (+₹{$v->extra_price})" : ''),
+                                                    ($v->extra_price > 0 ? " (+$" . number_format((float) $v->extra_price, 2) . ')' : ''),
                                             ])
                                         : []
                                     )
@@ -151,15 +151,11 @@ class QuotationTemplateResource extends Resource
             ->filters([])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()?->hasRole('admin')),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('name')
@@ -176,8 +172,8 @@ class QuotationTemplateResource extends Resource
         return [
             'index'  => Pages\ListQuotationTemplates::route('/'),
             'create' => Pages\CreateQuotationTemplate::route('/create'),
+            'view'   => Pages\ViewQuotationTemplate::route('/{record}'),
             'edit'   => Pages\EditQuotationTemplate::route('/{record}/edit'),
         ];
     }
 }
-

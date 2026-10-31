@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\DiscountAppliesTo;
+use App\Enums\DiscountType;
 use App\Filament\Resources\DiscountResource\Pages;
 use App\Models\Discount;
 use Filament\Forms;
@@ -11,7 +13,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class DiscountResource extends Resource
 {
@@ -25,17 +26,17 @@ class DiscountResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canEdit(Model $record): bool
+    public static function canEdit($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canDelete(Model $record): bool
+    public static function canDelete($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     public static function form(Form $form): Form
@@ -52,25 +53,23 @@ class DiscountResource extends Resource
 
                         Forms\Components\Select::make('type')
                             ->required()
-                            ->options([
-                                'fixed'      => 'Fixed Amount',
-                                'percentage' => 'Percentage',
-                            ])
+                            ->options(collect(DiscountType::cases())->mapWithKeys(fn (DiscountType $t) => [$t->value => $t->label()]))
                             ->native(false)
                             ->live()
-                            ->helperText('Fixed deducts a flat amount; Percentage deducts a percentage of the subtotal.'),
+                            ->helperText('Fixed deducts flat amount; Percentage deducts percentage of subtotal.'),
 
                         Forms\Components\TextInput::make('value')
                             ->required()
                             ->numeric()
                             ->minValue(0)
-                            ->suffix(fn (Forms\Get $get) => $get('type') === 'percentage' ? '%' : '₹')
-                            ->helperText(fn (Forms\Get $get) => $get('type') === 'percentage'
+                            ->suffix(fn (Forms\Get $get) => $get('type') === DiscountType::Percentage->value || $get('type') === 'percentage' ? '%' : '$')
+                            ->helperText(fn (Forms\Get $get) => $get('type') === DiscountType::Percentage->value || $get('type') === 'percentage'
                                 ? 'Percentage value (e.g. 15 for 15% off).'
-                                : 'Fixed amount to deduct (e.g. 200 for ₹200 off).'
+                                : 'Fixed amount to deduct (e.g. 200 for $200 off).'
                             ),
 
                         Forms\Components\Toggle::make('is_active')
+                            ->label('Active')
                             ->default(true)
                             ->helperText('Inactive discounts will not be applied.'),
                     ])
@@ -80,12 +79,14 @@ class DiscountResource extends Resource
                     ->description('Optional minimum requirements for this discount to apply.')
                     ->schema([
                         Forms\Components\TextInput::make('min_purchase')
+                            ->label('Min purchase')
                             ->numeric()
                             ->minValue(0)
-                            ->prefix('₹')
+                            ->prefix('$')
                             ->helperText('Minimum order/subscription value required. Leave empty for no minimum.'),
 
                         Forms\Components\TextInput::make('min_quantity')
+                            ->label('Min quantity')
                             ->numeric()
                             ->minValue(0)
                             ->integer()
@@ -111,12 +112,14 @@ class DiscountResource extends Resource
                     ->description('Control how many times and where this discount applies.')
                     ->schema([
                         Forms\Components\TextInput::make('usage_limit')
+                            ->label('Usage limit')
                             ->numeric()
                             ->minValue(1)
                             ->integer()
                             ->helperText('Max number of times this discount can be used. Leave empty for unlimited.'),
 
                         Forms\Components\TextInput::make('times_used')
+                            ->label('Times used')
                             ->numeric()
                             ->default(0)
                             ->disabled()
@@ -124,11 +127,9 @@ class DiscountResource extends Resource
                             ->helperText('Number of times this discount has been applied (read-only).'),
 
                         Forms\Components\Select::make('applies_to')
+                            ->label('Applies to')
                             ->required()
-                            ->options([
-                                'product'      => 'Specific Product',
-                                'subscription' => 'Specific Subscription',
-                            ])
+                            ->options(collect(DiscountAppliesTo::cases())->mapWithKeys(fn (DiscountAppliesTo $a) => [$a->value => $a->label()]))
                             ->native(false)
                             ->live()
                             ->helperText('Whether this discount targets a specific product or a specific subscription.'),
@@ -138,8 +139,8 @@ class DiscountResource extends Resource
                             ->relationship('product', 'name')
                             ->searchable()
                             ->preload()
-                            ->visible(fn (Forms\Get $get) => $get('applies_to') === 'product')
-                            ->required(fn (Forms\Get $get) => $get('applies_to') === 'product')
+                            ->visible(fn (Forms\Get $get) => $get('applies_to') === DiscountAppliesTo::Product->value || $get('applies_to') === 'product')
+                            ->required(fn (Forms\Get $get) => $get('applies_to') === DiscountAppliesTo::Product->value || $get('applies_to') === 'product')
                             ->helperText('The product this discount applies to.'),
 
                         Forms\Components\Select::make('subscription_id')
@@ -147,8 +148,8 @@ class DiscountResource extends Resource
                             ->relationship('subscription', 'number')
                             ->searchable()
                             ->preload()
-                            ->visible(fn (Forms\Get $get) => $get('applies_to') === 'subscription')
-                            ->required(fn (Forms\Get $get) => $get('applies_to') === 'subscription')
+                            ->visible(fn (Forms\Get $get) => $get('applies_to') === DiscountAppliesTo::Subscription->value || $get('applies_to') === 'subscription')
+                            ->required(fn (Forms\Get $get) => $get('applies_to') === DiscountAppliesTo::Subscription->value || $get('applies_to') === 'subscription')
                             ->helperText('The subscription this discount applies to.'),
                     ])
                     ->columns(2),
@@ -165,7 +166,8 @@ class DiscountResource extends Resource
 
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state) => $state instanceof DiscountType ? $state->label() : ucfirst((string) $state))
+                    ->color(fn ($state): string => match ($state instanceof DiscountType ? $state->value : (string) $state) {
                         'fixed'      => 'info',
                         'percentage' => 'primary',
                         default      => 'gray',
@@ -173,15 +175,16 @@ class DiscountResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('value')
-                    ->formatStateUsing(fn (Discount $record) => $record->type === 'percentage'
+                    ->formatStateUsing(fn (Discount $record) => ($record->type instanceof DiscountType ? $record->type === DiscountType::Percentage : $record->type === 'percentage')
                         ? number_format((float) $record->value, 2) . '%'
-                        : '₹' . number_format((float) $record->value, 2)
+                        : '$' . number_format((float) $record->value, 2)
                     )
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('applies_to')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state) => $state instanceof DiscountAppliesTo ? $state->label() : ucfirst((string) $state))
+                    ->color(fn ($state): string => match ($state instanceof DiscountAppliesTo ? $state->value : (string) $state) {
                         'product'      => 'warning',
                         'subscription' => 'success',
                         default        => 'gray',
@@ -205,6 +208,7 @@ class DiscountResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
+                    ->label('Active')
                     ->boolean()
                     ->sortable(),
 
@@ -215,31 +219,21 @@ class DiscountResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
-                    ->options([
-                        'fixed'      => 'Fixed',
-                        'percentage' => 'Percentage',
-                    ]),
+                    ->options(collect(DiscountType::cases())->mapWithKeys(fn (DiscountType $t) => [$t->value => $t->label()])),
 
                 Tables\Filters\SelectFilter::make('applies_to')
-                    ->options([
-                        'product'      => 'Product',
-                        'subscription' => 'Subscription',
-                    ]),
+                    ->options(collect(DiscountAppliesTo::cases())->mapWithKeys(fn (DiscountAppliesTo $a) => [$a->value => $a->label()])),
 
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active status'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()?->hasRole('admin')),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('name')
@@ -256,8 +250,8 @@ class DiscountResource extends Resource
         return [
             'index'  => Pages\ListDiscounts::route('/'),
             'create' => Pages\CreateDiscount::route('/create'),
+            'view'   => Pages\ViewDiscount::route('/{record}'),
             'edit'   => Pages\EditDiscount::route('/{record}/edit'),
         ];
     }
 }
-

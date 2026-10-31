@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\ProductType;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
 use Filament\Forms;
@@ -11,7 +12,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class ProductResource extends Resource
 {
@@ -23,22 +23,19 @@ class ProductResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    /**
-     * Only admins can create, edit or delete products. Staff may view.
-     */
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canEdit(Model $record): bool
+    public static function canEdit($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
-    public static function canDelete(Model $record): bool
+    public static function canDelete($record): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     public static function form(Form $form): Form
@@ -56,34 +53,33 @@ class ProductResource extends Resource
 
                         Forms\Components\Select::make('type')
                             ->required()
-                            ->options([
-                                'subscription' => 'Subscription',
-                                'service'      => 'Service',
-                                'addon'        => 'Add-on',
-                            ])
+                            ->options(collect(ProductType::cases())->mapWithKeys(fn (ProductType $type) => [$type->value => $type->label()]))
                             ->native(false)
                             ->helperText('The category this product belongs to.'),
 
                         Forms\Components\TextInput::make('sales_price')
+                            ->label('Sales price')
                             ->required()
                             ->numeric()
                             ->minValue(0)
-                            ->prefix('₹')
+                            ->prefix('$')
                             ->helperText('The price charged to customers.'),
 
                         Forms\Components\TextInput::make('cost_price')
+                            ->label('Cost price')
                             ->required()
                             ->numeric()
                             ->minValue(0)
-                            ->prefix('₹')
+                            ->prefix('$')
                             ->helperText('Your internal cost for this product.'),
 
                         Forms\Components\Textarea::make('notes')
-                            ->maxLength(1000)
+                            ->maxLength(2000)
                             ->columnSpanFull()
                             ->helperText('Internal notes or description for this product.'),
 
                         Forms\Components\Toggle::make('is_active')
+                            ->label('Active')
                             ->default(true)
                             ->helperText('Inactive products will not appear in new quotations.'),
                     ])
@@ -112,8 +108,8 @@ class ProductResource extends Resource
                                     ->numeric()
                                     ->minValue(0)
                                     ->default(0)
-                                    ->prefix('₹')
-                                    ->helperText('Additional price on top of the base sales price.'),
+                                    ->prefix('$')
+                                    ->helperText('Additional price on top of base sales price.'),
                             ])
                             ->columns(3)
                             ->defaultItems(0)
@@ -122,8 +118,8 @@ class ProductResource extends Resource
                             ->collapsible()
                             ->itemLabel(fn (array $state): ?string =>
                                 ($state['attribute'] ?? '') . ': ' . ($state['value'] ?? '') .
-                                (isset($state['extra_price']) && $state['extra_price'] > 0
-                                    ? ' (+₹' . number_format((float) $state['extra_price'], 2) . ')'
+                                (isset($state['extra_price']) && (float) $state['extra_price'] > 0
+                                    ? ' (+$' . number_format((float) $state['extra_price'], 2) . ')'
                                     : '')
                             ),
                     ]),
@@ -140,20 +136,17 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'subscription' => 'primary',
-                        'service'      => 'info',
-                        'addon'        => 'warning',
-                        default        => 'gray',
-                    })
+                    ->formatStateUsing(fn ($state) => $state instanceof ProductType ? $state->label() : ucfirst((string) $state))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('sales_price')
-                    ->money('INR')
+                    ->label('Sales price')
+                    ->money('USD')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('cost_price')
-                    ->money('INR')
+                    ->label('Cost price')
+                    ->money('USD')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -163,6 +156,7 @@ class ProductResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
+                    ->label('Active')
                     ->boolean()
                     ->sortable(),
 
@@ -173,26 +167,18 @@ class ProductResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
-                    ->options([
-                        'subscription' => 'Subscription',
-                        'service'      => 'Service',
-                        'addon'        => 'Add-on',
-                    ]),
+                    ->options(collect(ProductType::cases())->mapWithKeys(fn (ProductType $type) => [$type->value => $type->label()])),
 
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active status'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => auth()->user()?->hasRole('admin')),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()?->hasRole('admin')),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('name')
@@ -209,8 +195,8 @@ class ProductResource extends Resource
         return [
             'index'  => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
+            'view'   => Pages\ViewProduct::route('/{record}'),
             'edit'   => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
 }
-
