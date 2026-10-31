@@ -20,11 +20,16 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(default: auth()->user()->homeUrl(), navigate: false);
     }
 }; ?>
 
 <div>
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Welcome back</h1>
+        <p class="mt-1 text-sm text-slate-500">Sign in to manage your subscriptions and billing.</p>
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -58,7 +63,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}" wire:navigate>
+                <a class="text-sm font-medium text-primary-600 hover:text-primary-500" href="{{ route('password.request') }}" wire:navigate>
                     {{ __('Forgot your password?') }}
                 </a>
             @endif

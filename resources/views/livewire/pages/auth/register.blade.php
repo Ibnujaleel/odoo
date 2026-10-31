@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
@@ -23,20 +25,38 @@ new #[Layout('layouts.guest')] class extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string', 'confirmed', Rules\Password::min(9)->mixedCase()->symbols()],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
-        event(new Registered($user = User::create($validated)));
+        $user = DB::transaction(function () use ($validated) {
+            $user = User::create($validated);
+            $user->assignRole('customer');
+
+            Customer::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+
+            return $user;
+        });
+
+        event(new Registered($user));
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirect($user->homeUrl());
     }
 }; ?>
 
 <div>
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Create your account</h1>
+        <p class="mt-1 text-sm text-slate-500">Start managing your subscriptions in minutes.</p>
+    </div>
+
     <form wire:submit="register">
         <!-- Name -->
         <div>
@@ -76,7 +96,7 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}" wire:navigate>
+            <a class="text-sm font-medium text-primary-600 hover:text-primary-500" href="{{ route('login') }}" wire:navigate>
                 {{ __('Already registered?') }}
             </a>
 

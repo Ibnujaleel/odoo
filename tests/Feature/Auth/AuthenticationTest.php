@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Livewire\Volt\Volt;
+use Spatie\Permission\Models\Role;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -12,7 +13,9 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
+    Role::create(['name' => 'customer', 'guard_name' => 'web']);
     $user = User::factory()->create();
+    $user->assignRole('customer');
 
     $component = Volt::test('pages.auth.login')
         ->set('form.email', $user->email)
@@ -22,7 +25,7 @@ test('users can authenticate using the login screen', function () {
 
     $component
         ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect('/portal');
 
     $this->assertAuthenticated();
 });
@@ -43,16 +46,25 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
-test('navigation menu can be rendered', function () {
+test('authenticated users are sent to their role home', function () {
+    Role::create(['name' => 'customer', 'guard_name' => 'web']);
     $user = User::factory()->create();
+    $user->assignRole('customer');
 
     $this->actingAs($user);
 
-    $response = $this->get('/dashboard');
+    $this->get('/dashboard')->assertRedirect('/portal');
+    $this->get('/portal')->assertOk()->assertSee('Welcome back');
+});
 
-    $response
-        ->assertOk()
-        ->assertSeeVolt('layout.navigation');
+test('admins are sent to the Filament panel', function () {
+    Role::create(['name' => 'admin', 'guard_name' => 'web']);
+    $user = User::factory()->create();
+    $user->assignRole('admin');
+
+    $this->actingAs($user);
+
+    $this->get('/dashboard')->assertRedirect('/admin');
 });
 
 test('users can logout', function () {
