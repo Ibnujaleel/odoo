@@ -24,6 +24,8 @@ class Dashboard extends Component
         return view('livewire.portal.dashboard', [
             'customer' => $customer,
             'activeSubscriptions' => $customer?->subscriptions()->where('status', 'active')->count() ?? 0,
+            'openQuotations' => $customer?->subscriptions()->where('status', 'quotation')->count() ?? 0,
+            'outstandingInvoices' => $customer?->invoices()->outstanding()->count() ?? 0,
             'outstanding' => $customer ? (float) $customer->invoices()->outstanding()->sum(DB::raw('total - amount_paid')) : 0,
             'paidTotal' => $customer ? (float) $customer->payments()->sum('amount') : 0,
             'nextBilling' => $customer?->subscriptions()->where('status', 'active')->whereNotNull('next_billing_date')->min('next_billing_date'),

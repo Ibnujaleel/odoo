@@ -21,6 +21,7 @@
                         <th class="px-5 py-3 text-right"><button type="button" wire:click="sortBy('total')" class="font-semibold">Total</button></th>
                         <th class="px-5 py-3 text-right">Paid</th>
                         <th class="px-5 py-3"><button type="button" wire:click="sortBy('status')" class="font-semibold">Status</button></th>
+                        <th class="px-5 py-3 text-right">PDF</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -32,6 +33,11 @@
                             <td class="whitespace-nowrap px-5 py-3 text-right font-medium text-slate-900">${{ number_format((float) $invoice->total, 2) }}</td>
                             <td class="whitespace-nowrap px-5 py-3 text-right text-slate-600">${{ number_format((float) $invoice->amount_paid, 2) }}</td>
                             <td class="whitespace-nowrap px-5 py-3"><x-ui.status-badge :status="$invoice->displayStatus()" /></td>
+                            <td class="whitespace-nowrap px-5 py-3 text-right">
+                                <a href="{{ url('/portal/invoices/'.$invoice->id.'/pdf') }}" target="_blank" class="font-semibold text-primary-600 hover:text-primary-500">
+                                    Download
+                                </a>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

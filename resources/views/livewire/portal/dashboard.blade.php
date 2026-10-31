@@ -1,14 +1,14 @@
 <div class="space-y-6">
     <x-ui.page-header
         title="Welcome back, {{ auth()->user()->name }}"
-        subtitle="A snapshot of your subscriptions, billing and payments."
+        subtitle="A snapshot of your subscriptions, billing and quotations."
     />
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-ui.stat-card label="Active subscriptions" :value="$activeSubscriptions" hint="Currently billing" tone="success" />
-        <x-ui.stat-card label="Outstanding" value="${{ number_format($outstanding, 2) }}" hint="Unpaid balance" tone="warning" />
-        <x-ui.stat-card label="Paid to date" value="${{ number_format($paidTotal, 2) }}" hint="Recorded payments" tone="primary" />
-        <x-ui.stat-card label="Next billing" :value="$nextBilling ? \Illuminate\Support\Carbon::parse($nextBilling)->format('M j, Y') : '—'" hint="Upcoming invoice" tone="slate" />
+        <x-ui.stat-card label="Open quotations" :value="$openQuotations" hint="Ready for review" tone="primary" />
+        <x-ui.stat-card label="Outstanding invoices" :value="$outstandingInvoices" hint="Unpaid bills: ${{ number_format($outstanding, 2) }}" tone="warning" />
+        <x-ui.stat-card label="Next billing" :value="$nextBilling ? \Illuminate\Support\Carbon::parse($nextBilling)->format('M j, Y') : '—'" hint="Upcoming scheduled charge" tone="slate" />
     </div>
 
     <x-ui.data-table title="Recent invoices" subtitle="Your latest billing activity" :paginator="$invoices">
