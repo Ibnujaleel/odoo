@@ -6,6 +6,8 @@ Subscription lifecycle, recurring billing and finance reporting for growing team
 - **Customer portal:** `/portal` (Livewire + Tailwind)
 - **Stack:** Laravel 11, PHP 8.3, PostgreSQL, Eloquent, Filament, Spatie Permission, Dompdf, Pest.
 
+See `docs/ARCHITECTURE.md` for the full product and component architecture.
+
 ## Local setup (Laravel Sail)
 
 ```bash
