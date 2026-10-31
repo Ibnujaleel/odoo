@@ -41,3 +41,4 @@ class CustomerInvitationMail extends Mailable
         return [];
     }
 }
+

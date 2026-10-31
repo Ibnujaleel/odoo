@@ -181,3 +181,4 @@ test('quotation pdf route is accessible by staff and owning customer, but forbid
         ->get(route('portal.quotations.pdf', $subscription))
         ->assertForbidden();
 });
+

@@ -25,3 +25,4 @@ class QuotationPdfController extends Controller
         return $pdf->stream("quotation-{$subscription->number}.pdf");
     }
 }
+
