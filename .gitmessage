@@ -1,0 +1,11 @@
+<type>(<scope>): <imperative summary, max 72 chars>
+
+- What: what was added or changed
+- Why: the requirement or business rule it satisfies
+- How: key design choice (for example "idempotent via firstOrCreate on unique key")
+- Tests: what was tested, or "manual: <steps>"
+- Refs: <milestone id, e.g. M3>
+
+# Types: feat, fix, refactor, test, docs, chore, style
+# Scopes: auth, catalogue, plan, tax, discount, billing, quotation,
+#         subscription, portal, invoice, payment, finance, dashboard, ui, db
