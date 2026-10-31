@@ -129,11 +129,11 @@ class PlanResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn ($state) => $state instanceof BillingPeriod ? $state->label() : ucfirst((string) $state))
                     ->color(fn ($state): string => match ($state instanceof BillingPeriod ? $state->value : (string) $state) {
-                        'daily'   => 'gray',
-                        'weekly'  => 'info',
+                        'daily' => 'gray',
+                        'weekly' => 'info',
                         'monthly' => 'primary',
-                        'yearly'  => 'success',
-                        default   => 'gray',
+                        'yearly' => 'success',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -156,7 +156,7 @@ class PlanResource extends Resource
                         'active' => 'success',
                         'paused' => 'warning',
                         'closed' => 'danger',
-                        default  => 'gray',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -241,10 +241,10 @@ class PlanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPlans::route('/'),
+            'index' => Pages\ListPlans::route('/'),
             'create' => Pages\CreatePlan::route('/create'),
-            'view'   => Pages\ViewPlan::route('/{record}'),
-            'edit'   => Pages\EditPlan::route('/{record}/edit'),
+            'view' => Pages\ViewPlan::route('/{record}'),
+            'edit' => Pages\EditPlan::route('/{record}/edit'),
         ];
     }
 }

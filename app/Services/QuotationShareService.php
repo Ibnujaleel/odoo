@@ -17,4 +17,3 @@ class QuotationShareService
         return 'https://wa.me/?text='.rawurlencode($message);
     }
 }
-

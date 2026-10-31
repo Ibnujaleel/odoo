@@ -116,10 +116,9 @@ class ProductResource extends Resource
                             ->addActionLabel('Add Variant')
                             ->reorderable(false)
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string =>
-                                ($state['attribute'] ?? '') . ': ' . ($state['value'] ?? '') .
+                            ->itemLabel(fn (array $state): ?string => ($state['attribute'] ?? '').': '.($state['value'] ?? '').
                                 (isset($state['extra_price']) && (float) $state['extra_price'] > 0
-                                    ? ' (+$' . number_format((float) $state['extra_price'], 2) . ')'
+                                    ? ' (+$'.number_format((float) $state['extra_price'], 2).')'
                                     : '')
                             ),
                     ]),
@@ -193,10 +192,10 @@ class ProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProducts::route('/'),
+            'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
-            'view'   => Pages\ViewProduct::route('/{record}'),
-            'edit'   => Pages\EditProduct::route('/{record}/edit'),
+            'view' => Pages\ViewProduct::route('/{record}'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
 }

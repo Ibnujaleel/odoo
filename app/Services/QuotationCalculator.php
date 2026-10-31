@@ -11,8 +11,8 @@ use InvalidArgumentException;
 class QuotationCalculator
 {
     public function __construct(
-        private readonly TaxCalculator $taxCalculator = new TaxCalculator(),
-        private readonly DiscountEngine $discountEngine = new DiscountEngine(),
+        private readonly TaxCalculator $taxCalculator = new TaxCalculator,
+        private readonly DiscountEngine $discountEngine = new DiscountEngine,
     ) {}
 
     /**
@@ -20,7 +20,6 @@ class QuotationCalculator
      *
      * @param  array<int, mixed>  $lines
      * @param  Tax|float|null  $tax
-     * @param  Discount|null  $discount
      * @return array{
      *     lines: array<int, array{
      *         product_id: int|null,
@@ -158,4 +157,3 @@ class QuotationCalculator
         ];
     }
 }
-

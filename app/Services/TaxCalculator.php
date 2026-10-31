@@ -22,9 +22,9 @@ class TaxCalculator
     /**
      * Calculate the tax amount for the given net price.
      *
-     * @param  float     $net  The net (pre-tax) amount.
+     * @param  float  $net  The net (pre-tax) amount.
      * @param  Tax|null  $tax  The tax rule to apply, or null for no tax.
-     * @return float           The calculated tax amount, rounded to 2 decimals.
+     * @return float The calculated tax amount, rounded to 2 decimals.
      */
     public function calculate(float $net, ?Tax $tax): float
     {
@@ -36,8 +36,8 @@ class TaxCalculator
 
         $amount = match ($type) {
             'percentage' => $net * ((float) $tax->rate / 100),
-            'fixed'      => (float) $tax->rate,
-            default      => 0.0,
+            'fixed' => (float) $tax->rate,
+            default => 0.0,
         };
 
         return round($amount, 2);

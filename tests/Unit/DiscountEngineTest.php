@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Models\Customer;
 use App\Models\Discount;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\SubscriptionLine;
 use App\Services\DiscountEngine;
@@ -12,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->engine = new DiscountEngine();
+    $this->engine = new DiscountEngine;
 });
 
 /*
@@ -23,13 +25,13 @@ beforeEach(function () {
 
 function createSubscriptionWithLines(array $lineOverrides = []): Subscription
 {
-    $customer = \App\Models\Customer::factory()->create();
-    $plan     = \App\Models\Plan::factory()->create();
+    $customer = Customer::factory()->create();
+    $plan = Plan::factory()->create();
 
     $subscription = Subscription::factory()->create([
         'customer_id' => $customer->id,
-        'plan_id'     => $plan->id,
-        'status'      => 'active',
+        'plan_id' => $plan->id,
+        'status' => 'active',
     ]);
 
     foreach ($lineOverrides as $line) {
@@ -56,14 +58,14 @@ it('excludes expired discounts', function () {
     ]);
 
     Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-06-30'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-06-30'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-07-15'));
@@ -77,14 +79,14 @@ it('excludes discounts that have not started yet', function () {
     ]);
 
     Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-12-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-12-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-15'));
@@ -98,14 +100,14 @@ it('includes discounts on the exact start and end dates', function () {
     ]);
 
     $discount = Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-10-31'),
-        'end_date'        => Carbon::parse('2026-10-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-10-31'),
+        'end_date' => Carbon::parse('2026-10-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-31'));
@@ -126,15 +128,15 @@ it('excludes discounts that hit their usage limit', function () {
     ]);
 
     Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => 3,
-        'times_used'      => 3,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => 3,
+        'times_used' => 3,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-15'));
@@ -148,15 +150,15 @@ it('includes discounts with null usage limit (unlimited)', function () {
     ]);
 
     $discount = Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'times_used'      => 999,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'times_used' => 999,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-15'));
@@ -177,14 +179,14 @@ it('excludes discounts when total quantity is below min_quantity', function () {
     ]);
 
     Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'min_quantity'    => 10,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'min_quantity' => 10,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-15'));
@@ -204,14 +206,14 @@ it('excludes discounts when total amount is below min_purchase', function () {
     ]);
 
     Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'min_quantity'    => null,
-        'min_purchase'    => 500,
+        'usage_limit' => null,
+        'min_quantity' => null,
+        'min_purchase' => 500,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-15'));
@@ -234,14 +236,14 @@ it('matches subscription-scoped discounts by subscription_id', function () {
     ]);
 
     $discount = Discount::factory()->create([
-        'is_active'       => true,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $sub1->id,
-        'usage_limit'     => null,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     expect($this->engine->applicable($sub1, Carbon::parse('2026-10-15')))->toHaveCount(1);
@@ -256,12 +258,12 @@ it('matches product-scoped discounts when product is in subscription lines', fun
     ]);
 
     $discount = Discount::factory()->create([
-        'is_active'    => true,
-        'start_date'   => Carbon::parse('2026-01-01'),
-        'end_date'     => Carbon::parse('2026-12-31'),
-        'applies_to'   => 'product',
-        'product_id'   => $productId,
-        'usage_limit'  => null,
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'product',
+        'product_id' => $productId,
+        'usage_limit' => null,
         'min_quantity' => null,
         'min_purchase' => null,
     ]);
@@ -278,12 +280,12 @@ it('excludes product-scoped discounts when product is not in subscription lines'
     ]);
 
     Discount::factory()->create([
-        'is_active'    => true,
-        'start_date'   => Carbon::parse('2026-01-01'),
-        'end_date'     => Carbon::parse('2026-12-31'),
-        'applies_to'   => 'product',
-        'product_id'   => 99, // not in subscription lines
-        'usage_limit'  => null,
+        'is_active' => true,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'product',
+        'product_id' => 99, // not in subscription lines
+        'usage_limit' => null,
         'min_quantity' => null,
         'min_purchase' => null,
     ]);
@@ -305,14 +307,14 @@ it('excludes inactive discounts', function () {
     ]);
 
     Discount::factory()->create([
-        'is_active'       => false,
-        'start_date'      => Carbon::parse('2026-01-01'),
-        'end_date'        => Carbon::parse('2026-12-31'),
-        'applies_to'      => 'subscription',
+        'is_active' => false,
+        'start_date' => Carbon::parse('2026-01-01'),
+        'end_date' => Carbon::parse('2026-12-31'),
+        'applies_to' => 'subscription',
         'subscription_id' => $subscription->id,
-        'usage_limit'     => null,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'usage_limit' => null,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $result = $this->engine->applicable($subscription, Carbon::parse('2026-10-15'));
@@ -360,7 +362,7 @@ it('returns zero for unknown discount type', function () {
 
 it('calculates zero discount for zero subtotal', function () {
     $fixedDiscount = new Discount(['type' => 'fixed', 'value' => 50]);
-    $pctDiscount   = new Discount(['type' => 'percentage', 'value' => 20]);
+    $pctDiscount = new Discount(['type' => 'percentage', 'value' => 20]);
 
     expect($this->engine->amountFor($fixedDiscount, 0.0, 1))->toBe(0.0);
     expect($this->engine->amountFor($pctDiscount, 0.0, 1))->toBe(0.0);

@@ -168,16 +168,16 @@ class DiscountResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn ($state) => $state instanceof DiscountType ? $state->label() : ucfirst((string) $state))
                     ->color(fn ($state): string => match ($state instanceof DiscountType ? $state->value : (string) $state) {
-                        'fixed'      => 'info',
+                        'fixed' => 'info',
                         'percentage' => 'primary',
-                        default      => 'gray',
+                        default => 'gray',
                     })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('value')
                     ->formatStateUsing(fn (Discount $record) => ($record->type instanceof DiscountType ? $record->type === DiscountType::Percentage : $record->type === 'percentage')
-                        ? number_format((float) $record->value, 2) . '%'
-                        : '$' . number_format((float) $record->value, 2)
+                        ? number_format((float) $record->value, 2).'%'
+                        : '$'.number_format((float) $record->value, 2)
                     )
                     ->sortable(),
 
@@ -185,9 +185,9 @@ class DiscountResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn ($state) => $state instanceof DiscountAppliesTo ? $state->label() : ucfirst((string) $state))
                     ->color(fn ($state): string => match ($state instanceof DiscountAppliesTo ? $state->value : (string) $state) {
-                        'product'      => 'warning',
+                        'product' => 'warning',
                         'subscription' => 'success',
-                        default        => 'gray',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -248,10 +248,10 @@ class DiscountResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListDiscounts::route('/'),
+            'index' => Pages\ListDiscounts::route('/'),
             'create' => Pages\CreateDiscount::route('/create'),
-            'view'   => Pages\ViewDiscount::route('/{record}'),
-            'edit'   => Pages\EditDiscount::route('/{record}/edit'),
+            'view' => Pages\ViewDiscount::route('/{record}'),
+            'edit' => Pages\EditDiscount::route('/{record}/edit'),
         ];
     }
 }

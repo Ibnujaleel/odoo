@@ -55,12 +55,12 @@ class RunBilling extends Page
                 ->modalHeading('Run billing for all due subscriptions?')
                 ->modalDescription('This will generate invoices for all active subscriptions whose billing date is today or earlier. The process runs synchronously and may take a moment.')
                 ->action(function () {
-                    $job = new GenerateDueInvoices();
+                    $job = new GenerateDueInvoices;
                     $job->handle(app(BillingService::class));
 
                     $this->invoicesCreated = $job->invoicesCreated;
-                    $this->failures        = $job->failures;
-                    $this->lastRunAt       = now()->format('Y-m-d H:i:s');
+                    $this->failures = $job->failures;
+                    $this->lastRunAt = now()->format('Y-m-d H:i:s');
 
                     Notification::make()
                         ->title('Billing run complete')
@@ -75,9 +75,9 @@ class RunBilling extends Page
     {
         return $infolist
             ->state([
-                'lastRunAt'       => $this->lastRunAt ?? 'Not run yet during this session',
+                'lastRunAt' => $this->lastRunAt ?? 'Not run yet during this session',
                 'invoicesCreated' => $this->invoicesCreated ?? 0,
-                'failures'        => $this->failures ?? 0,
+                'failures' => $this->failures ?? 0,
             ])
             ->schema([
                 Section::make('Manual Billing Execution')

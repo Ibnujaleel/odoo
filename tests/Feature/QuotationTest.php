@@ -41,7 +41,7 @@ test('quotation calculator calculates correct line amounts, subtotal, and grand 
         ],
     ];
 
-    $calculator = new QuotationCalculator();
+    $calculator = new QuotationCalculator;
     $result = $calculator->calculate($lines);
 
     // Line 1: 100 * 2 = 200, Tax = 20
@@ -75,7 +75,7 @@ test('quotation calculator adjusts unit price for product variants', function ()
         ],
     ];
 
-    $calculator = new QuotationCalculator();
+    $calculator = new QuotationCalculator;
     $result = $calculator->calculate($lines);
 
     // unit_price = 200 + 75 = 275
@@ -102,7 +102,7 @@ test('quotation calculator applies discounts accurately', function () {
         ],
     ];
 
-    $calculator = new QuotationCalculator();
+    $calculator = new QuotationCalculator;
     $result = $calculator->calculate($lines, null, $discount);
 
     expect($result['subtotal'])->toBe(150.0)
@@ -118,7 +118,7 @@ test('quotation calculator rejects zero or negative quantity', function () {
         ],
     ];
 
-    $calculator = new QuotationCalculator();
+    $calculator = new QuotationCalculator;
     $calculator->calculate($lines);
 })->throws(InvalidArgumentException::class, 'Line quantity must be greater than zero.');
 
@@ -181,4 +181,3 @@ test('quotation pdf route is accessible by staff and owning customer, but forbid
         ->get(route('portal.quotations.pdf', $subscription))
         ->assertForbidden();
 });
-

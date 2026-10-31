@@ -60,8 +60,8 @@ class GenerateDueInvoices implements ShouldQueue
                             $this->invoicesCreated++;
 
                             Log::info('[GenerateDueInvoices] Invoice created', [
-                                'invoice_id'      => $invoice->id,
-                                'invoice_number'  => $invoice->number,
+                                'invoice_id' => $invoice->id,
+                                'invoice_number' => $invoice->number,
                                 'subscription_id' => $subscription->id,
                             ]);
                         }
@@ -70,8 +70,8 @@ class GenerateDueInvoices implements ShouldQueue
 
                         Log::error('[GenerateDueInvoices] Failed to generate invoice', [
                             'subscription_id' => $subscription->id,
-                            'error'           => $e->getMessage(),
-                            'trace'           => $e->getTraceAsString(),
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString(),
                         ]);
                     }
                 }
@@ -79,7 +79,7 @@ class GenerateDueInvoices implements ShouldQueue
 
         Log::info('[GenerateDueInvoices] Billing run complete', [
             'invoices_created' => $this->invoicesCreated,
-            'failures'         => $this->failures,
+            'failures' => $this->failures,
         ]);
     }
 }

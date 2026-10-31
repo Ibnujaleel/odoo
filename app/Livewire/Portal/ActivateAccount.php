@@ -89,4 +89,3 @@ class ActivateAccount extends Component
         return view('livewire.portal.activate-account');
     }
 }
-

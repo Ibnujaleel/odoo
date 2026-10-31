@@ -13,6 +13,7 @@ use App\Models\Subscription;
 use App\Models\SubscriptionLine;
 use App\Models\Tax;
 use App\Services\BillingService;
+use App\Services\SubscriptionStateMachine;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -30,22 +31,22 @@ function setupBillingScenario(array $overrides = []): array
 
     $plan = Plan::factory()->create(array_merge([
         'billing_period' => 'monthly',
-        'auto_close'     => false,
-        'end_date'       => null,
+        'auto_close' => false,
+        'end_date' => null,
     ], $overrides['plan'] ?? []));
 
     $product = Product::factory()->create([
-        'name'        => 'Test Product',
+        'name' => 'Test Product',
         'sales_price' => 100,
-        'is_active'   => true,
+        'is_active' => true,
     ]);
 
     $subscription = Subscription::factory()->create(array_merge([
-        'customer_id'       => $customer->id,
-        'plan_id'           => $plan->id,
-        'status'            => 'active',
+        'customer_id' => $customer->id,
+        'plan_id' => $plan->id,
+        'status' => 'active',
         'next_billing_date' => Carbon::today()->toDateString(),
-        'payment_terms'     => 30,
+        'payment_terms' => 30,
     ], $overrides['subscription'] ?? []));
 
     $tax = null;
@@ -55,11 +56,11 @@ function setupBillingScenario(array $overrides = []): array
 
     SubscriptionLine::factory()->create(array_merge([
         'subscription_id' => $subscription->id,
-        'product_id'      => $product->id,
-        'quantity'        => $overrides['quantity'] ?? 2,
-        'unit_price'      => $overrides['unit_price'] ?? 100,
-        'tax_id'          => $tax?->id,
-        'amount'          => ($overrides['quantity'] ?? 2) * ($overrides['unit_price'] ?? 100),
+        'product_id' => $product->id,
+        'quantity' => $overrides['quantity'] ?? 2,
+        'unit_price' => $overrides['unit_price'] ?? 100,
+        'tax_id' => $tax?->id,
+        'amount' => ($overrides['quantity'] ?? 2) * ($overrides['unit_price'] ?? 100),
     ], $overrides['line'] ?? []));
 
     return compact('customer', 'plan', 'product', 'subscription', 'tax');
@@ -88,10 +89,10 @@ it('creates exactly one invoice per billing period (idempotent)', function () {
 it('running the job twice yields one invoice per subscription', function () {
     ['subscription' => $subscription] = setupBillingScenario();
 
-    $job1 = new GenerateDueInvoices();
+    $job1 = new GenerateDueInvoices;
     $job1->handle(app(BillingService::class));
 
-    $job2 = new GenerateDueInvoices();
+    $job2 = new GenerateDueInvoices;
     $job2->handle(app(BillingService::class));
 
     expect(Invoice::where('subscription_id', $subscription->id)->count())->toBe(1);
@@ -109,7 +110,7 @@ it('skips closed subscriptions', function () {
     ]);
 
     $service = app(BillingService::class);
-    $result  = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
+    $result = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
 
     expect($result)->toBeNull()
         ->and(Invoice::count())->toBe(0);
@@ -121,7 +122,7 @@ it('skips draft subscriptions', function () {
     ]);
 
     $service = app(BillingService::class);
-    $result  = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
+    $result = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
 
     expect($result)->toBeNull()
         ->and(Invoice::count())->toBe(0);
@@ -133,7 +134,7 @@ it('skips subscriptions whose next_billing_date is in the future', function () {
     ]);
 
     $service = app(BillingService::class);
-    $result  = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
+    $result = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
 
     expect($result)->toBeNull()
         ->and(Invoice::count())->toBe(0);
@@ -147,8 +148,8 @@ it('skips subscriptions whose next_billing_date is in the future', function () {
 
 it('calculates tax totals correctly for percentage tax', function () {
     ['subscription' => $subscription] = setupBillingScenario([
-        'tax'        => ['type' => 'percentage', 'rate' => 18, 'is_active' => true, 'name' => 'GST'],
-        'quantity'   => 2,
+        'tax' => ['type' => 'percentage', 'rate' => 18, 'is_active' => true, 'name' => 'GST'],
+        'quantity' => 2,
         'unit_price' => 100,
     ]);
 
@@ -163,8 +164,8 @@ it('calculates tax totals correctly for percentage tax', function () {
 
 it('calculates tax totals correctly for fixed tax', function () {
     ['subscription' => $subscription] = setupBillingScenario([
-        'tax'        => ['type' => 'fixed', 'rate' => 25, 'is_active' => true, 'name' => 'Service Fee'],
-        'quantity'   => 3,
+        'tax' => ['type' => 'fixed', 'rate' => 25, 'is_active' => true, 'name' => 'Service Fee'],
+        'quantity' => 3,
         'unit_price' => 50,
     ]);
 
@@ -185,23 +186,23 @@ it('calculates tax totals correctly for fixed tax', function () {
 
 it('records discount usage and increments times_used', function () {
     ['subscription' => $subscription, 'product' => $product] = setupBillingScenario([
-        'quantity'   => 5,
+        'quantity' => 5,
         'unit_price' => 100,
     ]);
 
     $discount = Discount::factory()->create([
-        'name'            => 'Test Discount',
-        'type'            => 'percentage',
-        'value'           => 10,
-        'is_active'       => true,
-        'start_date'      => Carbon::today()->subDay(),
-        'end_date'        => Carbon::today()->addMonth(),
-        'applies_to'      => 'product',
-        'product_id'      => $product->id,
-        'usage_limit'     => 5,
-        'times_used'      => 0,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'name' => 'Test Discount',
+        'type' => 'percentage',
+        'value' => 10,
+        'is_active' => true,
+        'start_date' => Carbon::today()->subDay(),
+        'end_date' => Carbon::today()->addMonth(),
+        'applies_to' => 'product',
+        'product_id' => $product->id,
+        'usage_limit' => 5,
+        'times_used' => 0,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $service = app(BillingService::class);
@@ -214,23 +215,23 @@ it('records discount usage and increments times_used', function () {
 
 it('stops applying discount once usage limit is reached', function () {
     ['subscription' => $subscription, 'product' => $product] = setupBillingScenario([
-        'quantity'   => 5,
+        'quantity' => 5,
         'unit_price' => 100,
     ]);
 
     $discount = Discount::factory()->create([
-        'name'            => 'Limited Discount',
-        'type'            => 'percentage',
-        'value'           => 10,
-        'is_active'       => true,
-        'start_date'      => Carbon::today()->subDay(),
-        'end_date'        => Carbon::today()->addMonth(),
-        'applies_to'      => 'product',
-        'product_id'      => $product->id,
-        'usage_limit'     => 1,
-        'times_used'      => 1, // Already exhausted
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'name' => 'Limited Discount',
+        'type' => 'percentage',
+        'value' => 10,
+        'is_active' => true,
+        'start_date' => Carbon::today()->subDay(),
+        'end_date' => Carbon::today()->addMonth(),
+        'applies_to' => 'product',
+        'product_id' => $product->id,
+        'usage_limit' => 1,
+        'times_used' => 1, // Already exhausted
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $service = app(BillingService::class);
@@ -243,23 +244,23 @@ it('stops applying discount once usage limit is reached', function () {
 
 it('ignores expired discounts', function () {
     ['subscription' => $subscription, 'product' => $product] = setupBillingScenario([
-        'quantity'   => 5,
+        'quantity' => 5,
         'unit_price' => 100,
     ]);
 
     Discount::factory()->create([
-        'name'            => 'Old Discount',
-        'type'            => 'percentage',
-        'value'           => 50,
-        'is_active'       => true,
-        'start_date'      => Carbon::today()->subYear(),
-        'end_date'        => Carbon::today()->subMonth(), // Expired
-        'applies_to'      => 'product',
-        'product_id'      => $product->id,
-        'usage_limit'     => null,
-        'times_used'      => 0,
-        'min_quantity'    => null,
-        'min_purchase'    => null,
+        'name' => 'Old Discount',
+        'type' => 'percentage',
+        'value' => 50,
+        'is_active' => true,
+        'start_date' => Carbon::today()->subYear(),
+        'end_date' => Carbon::today()->subMonth(), // Expired
+        'applies_to' => 'product',
+        'product_id' => $product->id,
+        'usage_limit' => null,
+        'times_used' => 0,
+        'min_quantity' => null,
+        'min_purchase' => null,
     ]);
 
     $service = app(BillingService::class);
@@ -279,24 +280,25 @@ it('auto-closes subscription when plan has auto_close and end_date has passed', 
     ['subscription' => $subscription] = setupBillingScenario([
         'plan' => [
             'auto_close' => true,
-            'end_date'   => Carbon::yesterday()->toDateString(),
+            'end_date' => Carbon::yesterday()->toDateString(),
         ],
     ]);
 
     // Mock the SubscriptionStateMachine
-    $stateMachine = Mockery::mock(\App\Services\SubscriptionStateMachine::class);
+    $stateMachine = Mockery::mock(SubscriptionStateMachine::class);
     $stateMachine->shouldReceive('transition')
         ->once()
         ->with(Mockery::type(Subscription::class), 'closed')
         ->andReturnUsing(function ($s) {
             $s->update(['status' => 'closed']);
+
             return $s;
         });
 
-    app()->instance(\App\Services\SubscriptionStateMachine::class, $stateMachine);
+    app()->instance(SubscriptionStateMachine::class, $stateMachine);
 
     $service = app(BillingService::class);
-    $result  = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
+    $result = $service->generateFor($subscription->fresh(['plan', 'lines.tax', 'lines.product']));
 
     expect($result)->toBeNull()
         ->and(Invoice::count())->toBe(0);
@@ -312,7 +314,7 @@ it('advances next_billing_date by the plan billing period', function () {
     $today = Carbon::today();
 
     ['subscription' => $subscription] = setupBillingScenario([
-        'plan'         => ['billing_period' => 'monthly'],
+        'plan' => ['billing_period' => 'monthly'],
         'subscription' => ['next_billing_date' => $today->toDateString()],
     ]);
 
@@ -338,7 +340,7 @@ it('processes multiple subscriptions and counts results', function () {
     // Create 1 closed subscription (should be skipped)
     setupBillingScenario(['subscription' => ['status' => 'closed']]);
 
-    $job = new GenerateDueInvoices();
+    $job = new GenerateDueInvoices;
     $job->handle(app(BillingService::class));
 
     expect($job->invoicesCreated)->toBe(3)

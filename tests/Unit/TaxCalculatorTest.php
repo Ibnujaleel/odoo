@@ -6,7 +6,7 @@ use App\Models\Tax;
 use App\Services\TaxCalculator;
 
 beforeEach(function () {
-    $this->calculator = new TaxCalculator();
+    $this->calculator = new TaxCalculator;
 });
 
 /*
@@ -31,9 +31,9 @@ it('returns zero for zero net with null tax', function () {
 
 it('calculates percentage tax correctly', function () {
     $tax = new Tax([
-        'name'      => 'GST',
-        'type'      => 'percentage',
-        'rate'      => 18,
+        'name' => 'GST',
+        'type' => 'percentage',
+        'rate' => 18,
         'is_active' => true,
     ]);
 
@@ -42,9 +42,9 @@ it('calculates percentage tax correctly', function () {
 
 it('rounds percentage tax to two decimals', function () {
     $tax = new Tax([
-        'name'      => 'VAT',
-        'type'      => 'percentage',
-        'rate'      => 7,
+        'name' => 'VAT',
+        'type' => 'percentage',
+        'rate' => 7,
         'is_active' => true,
     ]);
 
@@ -54,9 +54,9 @@ it('rounds percentage tax to two decimals', function () {
 
 it('calculates percentage tax on small amounts', function () {
     $tax = new Tax([
-        'name'      => 'Micro Tax',
-        'type'      => 'percentage',
-        'rate'      => 5,
+        'name' => 'Micro Tax',
+        'type' => 'percentage',
+        'rate' => 5,
         'is_active' => true,
     ]);
 
@@ -66,9 +66,9 @@ it('calculates percentage tax on small amounts', function () {
 
 it('calculates percentage tax at 100 percent', function () {
     $tax = new Tax([
-        'name'      => 'Full Tax',
-        'type'      => 'percentage',
-        'rate'      => 100,
+        'name' => 'Full Tax',
+        'type' => 'percentage',
+        'rate' => 100,
         'is_active' => true,
     ]);
 
@@ -83,9 +83,9 @@ it('calculates percentage tax at 100 percent', function () {
 
 it('returns fixed rate regardless of net amount', function () {
     $tax = new Tax([
-        'name'      => 'Service Fee',
-        'type'      => 'fixed',
-        'rate'      => 25,
+        'name' => 'Service Fee',
+        'type' => 'fixed',
+        'rate' => 25,
         'is_active' => true,
     ]);
 
@@ -96,9 +96,9 @@ it('returns fixed rate regardless of net amount', function () {
 
 it('rounds fixed tax to two decimals', function () {
     $tax = new Tax([
-        'name'      => 'Odd Fee',
-        'type'      => 'fixed',
-        'rate'      => 9.999,
+        'name' => 'Odd Fee',
+        'type' => 'fixed',
+        'rate' => 9.999,
         'is_active' => true,
     ]);
 
@@ -113,9 +113,9 @@ it('rounds fixed tax to two decimals', function () {
 
 it('returns zero for an inactive tax', function () {
     $tax = new Tax([
-        'name'      => 'Old Tax',
-        'type'      => 'percentage',
-        'rate'      => 18,
+        'name' => 'Old Tax',
+        'type' => 'percentage',
+        'rate' => 18,
         'is_active' => false,
     ]);
 
@@ -130,9 +130,9 @@ it('returns zero for an inactive tax', function () {
 
 it('returns zero for zero net with percentage tax', function () {
     $tax = new Tax([
-        'name'      => 'GST',
-        'type'      => 'percentage',
-        'rate'      => 18,
+        'name' => 'GST',
+        'type' => 'percentage',
+        'rate' => 18,
         'is_active' => true,
     ]);
 
@@ -141,9 +141,9 @@ it('returns zero for zero net with percentage tax', function () {
 
 it('handles a zero-rate percentage tax', function () {
     $tax = new Tax([
-        'name'      => 'Exempt',
-        'type'      => 'percentage',
-        'rate'      => 0,
+        'name' => 'Exempt',
+        'type' => 'percentage',
+        'rate' => 0,
         'is_active' => true,
     ]);
 
@@ -152,9 +152,9 @@ it('handles a zero-rate percentage tax', function () {
 
 it('handles a zero-rate fixed tax', function () {
     $tax = new Tax([
-        'name'      => 'Free',
-        'type'      => 'fixed',
-        'rate'      => 0,
+        'name' => 'Free',
+        'type' => 'fixed',
+        'rate' => 0,
         'is_active' => true,
     ]);
 

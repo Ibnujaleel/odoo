@@ -151,4 +151,3 @@ test('invitation activation sets password, links user and clears token', functio
         ->and($customer->user_id)->not->toBeNull()
         ->and($customer->user->hasRole('customer'))->toBeTrue();
 });
-

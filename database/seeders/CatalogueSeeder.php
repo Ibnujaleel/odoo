@@ -39,87 +39,87 @@ class CatalogueSeeder extends Seeder
         */
 
         $odooErp = Product::create([
-            'name'        => 'Odoo ERP',
-            'type'        => ProductType::Subscription->value,
+            'name' => 'Odoo ERP',
+            'type' => ProductType::Subscription->value,
             'sales_price' => 2500,
-            'cost_price'  => 1800,
-            'notes'       => 'Full-featured ERP platform with modules for accounting, inventory, HR and more.',
-            'is_active'   => true,
+            'cost_price' => 1800,
+            'notes' => 'Full-featured ERP platform with modules for accounting, inventory, HR and more.',
+            'is_active' => true,
         ]);
 
         ProductVariant::create([
-            'product_id'  => $odooErp->id,
-            'attribute'   => 'brand',
-            'value'       => 'Odoo',
+            'product_id' => $odooErp->id,
+            'attribute' => 'brand',
+            'value' => 'Odoo',
             'extra_price' => 560,
         ]);
         ProductVariant::create([
-            'product_id'  => $odooErp->id,
-            'attribute'   => 'edition',
-            'value'       => 'Enterprise',
+            'product_id' => $odooErp->id,
+            'attribute' => 'edition',
+            'value' => 'Enterprise',
             'extra_price' => 1200,
         ]);
 
         $crm = Product::create([
-            'name'        => 'CRM Pro',
-            'type'        => ProductType::Subscription->value,
+            'name' => 'CRM Pro',
+            'type' => ProductType::Subscription->value,
             'sales_price' => 800,
-            'cost_price'  => 450,
-            'notes'       => 'Customer relationship management with pipeline, forecasting and email integration.',
-            'is_active'   => true,
+            'cost_price' => 450,
+            'notes' => 'Customer relationship management with pipeline, forecasting and email integration.',
+            'is_active' => true,
         ]);
 
         ProductVariant::create([
-            'product_id'  => $crm->id,
-            'attribute'   => 'tier',
-            'value'       => 'Premium',
+            'product_id' => $crm->id,
+            'attribute' => 'tier',
+            'value' => 'Premium',
             'extra_price' => 300,
         ]);
 
         $hosting = Product::create([
-            'name'        => 'Cloud Hosting',
-            'type'        => ProductType::Service->value,
+            'name' => 'Cloud Hosting',
+            'type' => ProductType::Service->value,
             'sales_price' => 150,
-            'cost_price'  => 60,
-            'notes'       => 'Managed cloud hosting with auto-scaling and daily backups.',
-            'is_active'   => true,
+            'cost_price' => 60,
+            'notes' => 'Managed cloud hosting with auto-scaling and daily backups.',
+            'is_active' => true,
         ]);
 
         ProductVariant::create([
-            'product_id'  => $hosting->id,
-            'attribute'   => 'region',
-            'value'       => 'US-East',
+            'product_id' => $hosting->id,
+            'attribute' => 'region',
+            'value' => 'US-East',
             'extra_price' => 0,
         ]);
         ProductVariant::create([
-            'product_id'  => $hosting->id,
-            'attribute'   => 'region',
-            'value'       => 'EU-West',
+            'product_id' => $hosting->id,
+            'attribute' => 'region',
+            'value' => 'EU-West',
             'extra_price' => 20,
         ]);
 
         $support = Product::create([
-            'name'        => 'Priority Support',
-            'type'        => ProductType::Service->value,
+            'name' => 'Priority Support',
+            'type' => ProductType::Service->value,
             'sales_price' => 200,
-            'cost_price'  => 80,
-            'notes'       => '24/7 priority support with 1-hour SLA for critical issues.',
-            'is_active'   => true,
+            'cost_price' => 80,
+            'notes' => '24/7 priority support with 1-hour SLA for critical issues.',
+            'is_active' => true,
         ]);
 
         $analytics = Product::create([
-            'name'        => 'Analytics Dashboard',
-            'type'        => ProductType::Addon->value,
+            'name' => 'Analytics Dashboard',
+            'type' => ProductType::Addon->value,
             'sales_price' => 350,
-            'cost_price'  => 120,
-            'notes'       => 'Advanced analytics and reporting dashboard with custom KPIs.',
-            'is_active'   => true,
+            'cost_price' => 120,
+            'notes' => 'Advanced analytics and reporting dashboard with custom KPIs.',
+            'is_active' => true,
         ]);
 
         ProductVariant::create([
-            'product_id'  => $analytics->id,
-            'attribute'   => 'data_retention',
-            'value'       => '12 months',
+            'product_id' => $analytics->id,
+            'attribute' => 'data_retention',
+            'value' => '12 months',
             'extra_price' => 50,
         ]);
 
@@ -130,45 +130,45 @@ class CatalogueSeeder extends Seeder
         */
 
         $monthlyPlan = Plan::create([
-            'name'           => 'Standard Monthly',
-            'price'          => 999,
+            'name' => 'Standard Monthly',
+            'price' => 999,
             'billing_period' => BillingPeriod::Monthly->value,
-            'min_quantity'   => 1,
-            'start_date'     => Carbon::today()->toDateString(),
-            'end_date'       => Carbon::today()->addYear()->toDateString(),
-            'auto_close'     => false,
-            'closable'       => true,
-            'pausable'       => true,
-            'renewable'      => true,
-            'status'         => PlanStatus::Active->value,
+            'min_quantity' => 1,
+            'start_date' => Carbon::today()->toDateString(),
+            'end_date' => Carbon::today()->addYear()->toDateString(),
+            'auto_close' => false,
+            'closable' => true,
+            'pausable' => true,
+            'renewable' => true,
+            'status' => PlanStatus::Active->value,
         ]);
 
         $yearlyPlan = Plan::create([
-            'name'           => 'Enterprise Annual',
-            'price'          => 9990,
+            'name' => 'Enterprise Annual',
+            'price' => 9990,
             'billing_period' => BillingPeriod::Yearly->value,
-            'min_quantity'   => 5,
-            'start_date'     => Carbon::today()->toDateString(),
-            'end_date'       => Carbon::today()->addYears(3)->toDateString(),
-            'auto_close'     => true,
-            'closable'       => true,
-            'pausable'       => false,
-            'renewable'      => true,
-            'status'         => PlanStatus::Active->value,
+            'min_quantity' => 5,
+            'start_date' => Carbon::today()->toDateString(),
+            'end_date' => Carbon::today()->addYears(3)->toDateString(),
+            'auto_close' => true,
+            'closable' => true,
+            'pausable' => false,
+            'renewable' => true,
+            'status' => PlanStatus::Active->value,
         ]);
 
         $trialPlan = Plan::create([
-            'name'           => 'Trial Daily',
-            'price'          => 0,
+            'name' => 'Trial Daily',
+            'price' => 0,
             'billing_period' => BillingPeriod::Daily->value,
-            'min_quantity'   => 1,
-            'start_date'     => Carbon::today()->toDateString(),
-            'end_date'       => Carbon::today()->addDays(14)->toDateString(),
-            'auto_close'     => true,
-            'closable'       => true,
-            'pausable'       => false,
-            'renewable'      => false,
-            'status'         => PlanStatus::Active->value,
+            'min_quantity' => 1,
+            'start_date' => Carbon::today()->toDateString(),
+            'end_date' => Carbon::today()->addDays(14)->toDateString(),
+            'auto_close' => true,
+            'closable' => true,
+            'pausable' => false,
+            'renewable' => false,
+            'status' => PlanStatus::Active->value,
         ]);
 
         /*
@@ -178,16 +178,16 @@ class CatalogueSeeder extends Seeder
         */
 
         $gst = Tax::create([
-            'name'      => 'GST 18%',
-            'type'      => TaxType::Percentage->value,
-            'rate'      => 18,
+            'name' => 'GST 18%',
+            'type' => TaxType::Percentage->value,
+            'rate' => 18,
             'is_active' => true,
         ]);
 
         $serviceFee = Tax::create([
-            'name'      => 'Platform Service Fee',
-            'type'      => TaxType::Fixed->value,
-            'rate'      => 49.99,
+            'name' => 'Platform Service Fee',
+            'type' => TaxType::Fixed->value,
+            'rate' => 49.99,
             'is_active' => true,
         ]);
 
@@ -198,35 +198,35 @@ class CatalogueSeeder extends Seeder
         */
 
         Discount::create([
-            'name'            => 'Launch Offer 15%',
-            'type'            => DiscountType::Percentage->value,
-            'value'           => 15,
-            'min_purchase'    => 500,
-            'min_quantity'    => null,
-            'start_date'      => Carbon::today()->toDateString(),
-            'end_date'        => Carbon::today()->addMonths(3)->toDateString(),
-            'usage_limit'     => 100,
-            'times_used'      => 0,
-            'applies_to'      => DiscountAppliesTo::Product->value,
-            'product_id'      => $odooErp->id,
+            'name' => 'Launch Offer 15%',
+            'type' => DiscountType::Percentage->value,
+            'value' => 15,
+            'min_purchase' => 500,
+            'min_quantity' => 1,
+            'start_date' => Carbon::today()->toDateString(),
+            'end_date' => Carbon::today()->addMonths(3)->toDateString(),
+            'usage_limit' => 100,
+            'times_used' => 0,
+            'applies_to' => DiscountAppliesTo::Product->value,
+            'product_id' => $odooErp->id,
             'subscription_id' => null,
-            'is_active'       => true,
+            'is_active' => true,
         ]);
 
         Discount::create([
-            'name'            => 'Flat ₹200 Off',
-            'type'            => DiscountType::Fixed->value,
-            'value'           => 200,
-            'min_purchase'    => 1000,
-            'min_quantity'    => 2,
-            'start_date'      => Carbon::today()->toDateString(),
-            'end_date'        => Carbon::today()->addMonth()->toDateString(),
-            'usage_limit'     => 50,
-            'times_used'      => 0,
-            'applies_to'      => DiscountAppliesTo::Product->value,
-            'product_id'      => $crm->id,
+            'name' => 'Flat ₹200 Off',
+            'type' => DiscountType::Fixed->value,
+            'value' => 200,
+            'min_purchase' => 1000,
+            'min_quantity' => 2,
+            'start_date' => Carbon::today()->toDateString(),
+            'end_date' => Carbon::today()->addMonth()->toDateString(),
+            'usage_limit' => 50,
+            'times_used' => 0,
+            'applies_to' => DiscountAppliesTo::Product->value,
+            'product_id' => $crm->id,
             'subscription_id' => null,
-            'is_active'       => true,
+            'is_active' => true,
         ]);
 
         /*
@@ -236,53 +236,53 @@ class CatalogueSeeder extends Seeder
         */
 
         $starterTemplate = QuotationTemplate::create([
-            'name'          => 'Starter Bundle',
-            'plan_id'       => $monthlyPlan->id,
+            'name' => 'Starter Bundle',
+            'plan_id' => $monthlyPlan->id,
             'validity_days' => 30,
         ]);
 
         QuotationTemplateLine::create([
             'quotation_template_id' => $starterTemplate->id,
-            'product_id'            => $odooErp->id,
-            'variant_id'            => null,
-            'quantity'              => 1,
+            'product_id' => $odooErp->id,
+            'variant_id' => null,
+            'quantity' => 1,
         ]);
         QuotationTemplateLine::create([
             'quotation_template_id' => $starterTemplate->id,
-            'product_id'            => $hosting->id,
-            'variant_id'            => null,
-            'quantity'              => 1,
+            'product_id' => $hosting->id,
+            'variant_id' => null,
+            'quantity' => 1,
         ]);
 
         $enterpriseTemplate = QuotationTemplate::create([
-            'name'          => 'Enterprise Suite',
-            'plan_id'       => $yearlyPlan->id,
+            'name' => 'Enterprise Suite',
+            'plan_id' => $yearlyPlan->id,
             'validity_days' => 15,
         ]);
 
         QuotationTemplateLine::create([
             'quotation_template_id' => $enterpriseTemplate->id,
-            'product_id'            => $odooErp->id,
-            'variant_id'            => null,
-            'quantity'              => 5,
+            'product_id' => $odooErp->id,
+            'variant_id' => null,
+            'quantity' => 5,
         ]);
         QuotationTemplateLine::create([
             'quotation_template_id' => $enterpriseTemplate->id,
-            'product_id'            => $crm->id,
-            'variant_id'            => null,
-            'quantity'              => 5,
+            'product_id' => $crm->id,
+            'variant_id' => null,
+            'quantity' => 5,
         ]);
         QuotationTemplateLine::create([
             'quotation_template_id' => $enterpriseTemplate->id,
-            'product_id'            => $support->id,
-            'variant_id'            => null,
-            'quantity'              => 1,
+            'product_id' => $support->id,
+            'variant_id' => null,
+            'quantity' => 1,
         ]);
         QuotationTemplateLine::create([
             'quotation_template_id' => $enterpriseTemplate->id,
-            'product_id'            => $analytics->id,
-            'variant_id'            => null,
-            'quantity'              => 1,
+            'product_id' => $analytics->id,
+            'variant_id' => null,
+            'quantity' => 1,
         ]);
     }
 }

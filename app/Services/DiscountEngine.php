@@ -34,8 +34,8 @@ class DiscountEngine
      * Return all discounts that qualify for the given subscription on a date.
      *
      * @param  Subscription  $subscription  The subscription (with lines eager-loaded).
-     * @param  Carbon        $on            The reference date for eligibility.
-     * @return Collection<int, Discount>    Qualifying discount models.
+     * @param  Carbon  $on  The reference date for eligibility.
+     * @return Collection<int, Discount> Qualifying discount models.
      */
     public function applicable(Subscription $subscription, Carbon $on): Collection
     {
@@ -45,8 +45,8 @@ class DiscountEngine
             : $subscription->lines()->get();
 
         $totalQuantity = (int) $lines->sum('quantity');
-        $totalAmount   = (float) $lines->sum('amount');
-        $productIds    = $lines->pluck('product_id')->unique()->filter()->values();
+        $totalAmount = (float) $lines->sum('amount');
+        $productIds = $lines->pluck('product_id')->unique()->filter()->values();
 
         return Discount::query()
             ->where('is_active', true)
@@ -54,7 +54,7 @@ class DiscountEngine
             ->whereDate('end_date', '>=', $on)
             ->where(function ($query) {
                 $query->whereNull('usage_limit')
-                      ->orWhereColumn('times_used', '<', 'usage_limit');
+                    ->orWhereColumn('times_used', '<', 'usage_limit');
             })
             ->get()
             ->filter(function (Discount $discount) use ($subscription, $totalQuantity, $totalAmount, $productIds) {
@@ -75,8 +75,8 @@ class DiscountEngine
                 // Check scope match
                 return match ($appliesTo) {
                     'subscription' => (int) $discount->subscription_id === (int) $subscription->id,
-                    'product'      => $productIds->contains($discount->product_id),
-                    default        => false,
+                    'product' => $productIds->contains($discount->product_id),
+                    default => false,
                 };
             })
             ->values();
@@ -86,9 +86,9 @@ class DiscountEngine
      * Calculate the discount amount for a single discount.
      *
      * @param  Discount  $discount  The discount to evaluate.
-     * @param  float     $subtotal  The line or invoice subtotal before discount.
-     * @param  int       $qty       The quantity (used for context; not in the formula per spec).
-     * @return float                The discount amount, rounded to 2 decimals.
+     * @param  float  $subtotal  The line or invoice subtotal before discount.
+     * @param  int  $qty  The quantity (used for context; not in the formula per spec).
+     * @return float The discount amount, rounded to 2 decimals.
      */
     public function amountFor(Discount $discount, float $subtotal, int $qty): float
     {
@@ -97,9 +97,9 @@ class DiscountEngine
             : (string) $discount->type;
 
         return match ($type) {
-            'fixed'      => round(min((float) $discount->value, $subtotal), 2),
+            'fixed' => round(min((float) $discount->value, $subtotal), 2),
             'percentage' => round($subtotal * ((float) $discount->value / 100), 2),
-            default      => 0.0,
+            default => 0.0,
         };
     }
 }

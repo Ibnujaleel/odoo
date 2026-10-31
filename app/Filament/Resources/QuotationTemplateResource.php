@@ -91,8 +91,8 @@ class QuotationTemplateResource extends Resource
                                         ? ProductVariant::where('product_id', $get('product_id'))
                                             ->get()
                                             ->mapWithKeys(fn ($v) => [
-                                                $v->id => "{$v->attribute}: {$v->value}" .
-                                                    ($v->extra_price > 0 ? " (+$" . number_format((float) $v->extra_price, 2) . ')' : ''),
+                                                $v->id => "{$v->attribute}: {$v->value}".
+                                                    ($v->extra_price > 0 ? ' (+$'.number_format((float) $v->extra_price, 2).')' : ''),
                                             ])
                                         : []
                                     )
@@ -111,9 +111,8 @@ class QuotationTemplateResource extends Resource
                             ->addActionLabel('Add Line')
                             ->reorderable(false)
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string =>
-                                ($state['product_id'] ?? null)
-                                    ? 'Product #' . $state['product_id'] . ' × ' . ($state['quantity'] ?? 1)
+                            ->itemLabel(fn (array $state): ?string => ($state['product_id'] ?? null)
+                                    ? 'Product #'.$state['product_id'].' × '.($state['quantity'] ?? 1)
                                     : 'New line'
                             ),
                     ]),
@@ -170,10 +169,10 @@ class QuotationTemplateResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListQuotationTemplates::route('/'),
+            'index' => Pages\ListQuotationTemplates::route('/'),
             'create' => Pages\CreateQuotationTemplate::route('/create'),
-            'view'   => Pages\ViewQuotationTemplate::route('/{record}'),
-            'edit'   => Pages\EditQuotationTemplate::route('/{record}/edit'),
+            'view' => Pages\ViewQuotationTemplate::route('/{record}'),
+            'edit' => Pages\EditQuotationTemplate::route('/{record}/edit'),
         ];
     }
 }

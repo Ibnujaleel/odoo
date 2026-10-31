@@ -89,15 +89,15 @@ class TaxResource extends Resource
                     ->formatStateUsing(fn ($state) => $state instanceof TaxType ? $state->label() : ucfirst((string) $state))
                     ->color(fn ($state): string => match ($state instanceof TaxType ? $state->value : (string) $state) {
                         'percentage' => 'primary',
-                        'fixed'      => 'info',
-                        default      => 'gray',
+                        'fixed' => 'info',
+                        default => 'gray',
                     })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('rate')
                     ->formatStateUsing(fn (Tax $record) => ($record->type instanceof TaxType ? $record->type === TaxType::Percentage : $record->type === 'percentage')
-                        ? number_format((float) $record->rate, 2) . '%'
-                        : '$' . number_format((float) $record->rate, 2)
+                        ? number_format((float) $record->rate, 2).'%'
+                        : '$'.number_format((float) $record->rate, 2)
                     )
                     ->sortable(),
 
@@ -139,10 +139,10 @@ class TaxResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTaxes::route('/'),
+            'index' => Pages\ListTaxes::route('/'),
             'create' => Pages\CreateTax::route('/create'),
-            'view'   => Pages\ViewTax::route('/{record}'),
-            'edit'   => Pages\EditTax::route('/{record}/edit'),
+            'view' => Pages\ViewTax::route('/{record}'),
+            'edit' => Pages\EditTax::route('/{record}/edit'),
         ];
     }
 }
