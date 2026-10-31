@@ -34,3 +34,533 @@
         @apply block w-full rounded-card border-slate-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500;
     }
 }
+
+.landing-page {
+    --landing-blue: #2563EB;
+    --landing-navy: #0F2A5C;
+    --landing-background: #F8FAFC;
+    --landing-surface: #FFFFFF;
+    --landing-text: #334155;
+    --landing-muted: #475569;
+    --landing-border: #E2E8F0;
+    --landing-blue-soft: #EFF6FF;
+    --landing-blue-border: #DBEAFE;
+    --landing-footer-muted: #CBD5E1;
+    --landing-space-1: 0.25rem;
+    --landing-space-2: 0.5rem;
+    --landing-space-3: 0.75rem;
+    --landing-space-4: 1rem;
+    --landing-space-6: 1.5rem;
+    --landing-space-8: 2rem;
+    --landing-space-10: 2.5rem;
+    --landing-space-12: 3rem;
+    --landing-space-16: 4rem;
+    --landing-radius-control: 0.75rem;
+    --landing-radius-card: 1rem;
+    --landing-shadow-card: 0 16px 40px -28px rgb(15 42 92 / 30%);
+    --landing-font-body: Inter, ui-sans-serif, system-ui, sans-serif;
+    --landing-font-heading: Outfit, Inter, ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+    background: var(--landing-background);
+    color: var(--landing-text);
+    font-family: var(--landing-font-body);
+}
+
+.landing-shell {
+    background: var(--landing-background);
+}
+
+.landing-decoration {
+    display: none;
+}
+
+.landing-header {
+    min-height: 5rem;
+    height: auto;
+    gap: var(--landing-space-4);
+    border-bottom: 1px solid var(--landing-border);
+}
+
+.landing-brand {
+    flex-shrink: 0;
+    gap: var(--landing-space-3);
+    color: var(--landing-navy);
+    text-decoration: none;
+}
+
+.landing-brand-mark {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    border-radius: var(--landing-radius-control);
+    background: var(--landing-blue);
+    color: var(--landing-surface);
+}
+
+.landing-brand-mark svg {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+.landing-brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.landing-wordmark {
+    color: var(--landing-navy);
+    font-family: var(--landing-font-heading);
+    font-size: 1.25rem;
+    line-height: 1.15;
+}
+
+.landing-wordmark span:last-child {
+    color: var(--landing-blue);
+}
+
+.landing-tagline {
+    margin-bottom: var(--landing-space-3);
+    color: var(--landing-blue);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.landing-nav {
+    flex-shrink: 0;
+    gap: var(--landing-space-2);
+}
+
+.landing-page .btn-primary,
+.landing-page .btn-secondary {
+    min-height: 2.75rem;
+    border-radius: var(--landing-radius-control);
+    font-family: var(--landing-font-body);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.landing-page .btn-primary {
+    border: 1px solid var(--landing-blue);
+    background: var(--landing-blue);
+    color: var(--landing-surface);
+    box-shadow: 0 2px 4px rgb(15 42 92 / 10%);
+}
+
+.landing-page .btn-primary:hover {
+    border-color: var(--landing-navy);
+    background: var(--landing-navy);
+    color: var(--landing-surface);
+    transform: translateY(-1px);
+}
+
+.landing-page .btn-secondary {
+    border: 1px solid var(--landing-border);
+    background: var(--landing-surface);
+    color: var(--landing-navy);
+    box-shadow: none;
+}
+
+.landing-page .btn-secondary:hover {
+    border-color: var(--landing-blue);
+    background: var(--landing-blue-soft);
+    color: var(--landing-navy);
+}
+
+.landing-main {
+    padding-top: var(--landing-space-12);
+    padding-bottom: var(--landing-space-16);
+}
+
+.landing-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: var(--landing-space-12);
+}
+
+.landing-hero-copy {
+    max-width: 42rem;
+}
+
+.landing-eyebrow {
+    color: var(--landing-blue);
+    letter-spacing: 0.14em;
+}
+
+.landing-title,
+.landing-feature-title {
+    color: var(--landing-navy);
+    font-family: var(--landing-font-heading);
+    font-weight: 600;
+}
+
+.landing-title {
+    max-width: 12ch;
+    margin-top: var(--landing-space-4);
+    font-size: clamp(2.5rem, 6vw, 4.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+}
+
+.landing-description {
+    max-width: 38rem;
+    margin-top: var(--landing-space-6);
+    color: var(--landing-muted);
+    font-size: 1.125rem;
+    line-height: 1.75;
+}
+
+.landing-actions {
+    margin-top: var(--landing-space-8);
+    gap: var(--landing-space-3);
+}
+
+.landing-page .landing-action-primary,
+.landing-page .landing-action-secondary {
+    min-height: 3rem;
+    padding-right: var(--landing-space-6);
+    padding-left: var(--landing-space-6);
+    font-size: 1rem;
+}
+
+.landing-demo {
+    margin-top: var(--landing-space-4);
+    color: var(--landing-muted);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.landing-visual {
+    position: relative;
+    width: 100%;
+    max-width: 39rem;
+    justify-self: center;
+    padding: var(--landing-space-4);
+}
+
+.landing-visual-card {
+    overflow: hidden;
+    border: 1px solid var(--landing-border);
+    border-radius: var(--landing-radius-card);
+    background: var(--landing-surface);
+    box-shadow: var(--landing-shadow-card);
+}
+
+.landing-visual-topbar {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--landing-space-3);
+    padding: 0 var(--landing-space-4);
+    border-bottom: 1px solid var(--landing-border);
+}
+
+.landing-window-dots {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--landing-space-1);
+}
+
+.landing-window-dots i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--landing-border);
+}
+
+.landing-visual-caption {
+    color: var(--landing-navy);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.landing-visual-menu {
+    color: var(--landing-muted);
+    font-size: 0.875rem;
+    letter-spacing: 0.12em;
+}
+
+.landing-visual-content {
+    padding: var(--landing-space-4) var(--landing-space-6) var(--landing-space-3);
+}
+
+.landing-loop-art {
+    width: 100%;
+    max-width: 29rem;
+    margin: 0 auto;
+}
+
+.landing-loop-art svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.landing-loop-line {
+    stroke: var(--landing-blue-border);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.landing-loop-line-secondary {
+    stroke: var(--landing-blue);
+    stroke-dasharray: 4 9;
+    stroke-width: 2;
+}
+
+.landing-loop-node {
+    fill: var(--landing-surface);
+    stroke: var(--landing-blue-border);
+    stroke-width: 2;
+}
+
+.landing-loop-node-center {
+    fill: var(--landing-blue-soft);
+    stroke: var(--landing-blue);
+    stroke-width: 2.5;
+}
+
+.landing-loop-person {
+    fill: none;
+    stroke: var(--landing-blue);
+    stroke-linecap: round;
+    stroke-width: 3;
+}
+
+.landing-loop-center-person {
+    fill: none;
+    stroke: var(--landing-navy);
+    stroke-linecap: round;
+    stroke-width: 3;
+}
+
+.landing-visual-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--landing-space-1);
+    padding-top: var(--landing-space-2);
+    text-align: center;
+}
+
+.landing-visual-label span:first-child {
+    color: var(--landing-navy);
+    font-family: var(--landing-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.landing-visual-label span:last-child {
+    color: var(--landing-muted);
+    font-size: 0.75rem;
+}
+
+.landing-visual-label b {
+    padding: 0 var(--landing-space-1);
+    color: var(--landing-blue);
+}
+
+.landing-visual-bottom {
+    display: flex;
+    justify-content: center;
+    gap: var(--landing-space-6);
+    padding: var(--landing-space-3) var(--landing-space-4);
+    border-top: 1px solid var(--landing-border);
+    color: var(--landing-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.landing-visual-bottom span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--landing-space-2);
+}
+
+.landing-visual-bottom i {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 50%;
+    background: var(--landing-blue);
+}
+
+.landing-visual-note {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: var(--landing-space-2) var(--landing-space-3);
+    border: 1px solid var(--landing-blue-border);
+    border-radius: var(--landing-radius-control);
+    background: var(--landing-surface);
+    box-shadow: var(--landing-shadow-card);
+    color: var(--landing-navy);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.landing-features {
+    margin-top: var(--landing-space-16);
+    gap: var(--landing-space-4);
+}
+
+.landing-feature-card {
+    min-width: 0;
+    border-color: var(--landing-border);
+    border-radius: var(--landing-radius-card);
+    background: var(--landing-surface);
+    padding: var(--landing-space-6);
+    box-shadow: var(--landing-shadow-card);
+    backdrop-filter: none;
+}
+
+.landing-feature-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--landing-radius-control);
+    background: var(--landing-blue-soft);
+    color: var(--landing-blue);
+}
+
+.landing-feature-title {
+    margin-top: var(--landing-space-4);
+    font-size: 1.125rem;
+    line-height: 1.4;
+}
+
+.landing-feature-description {
+    margin-top: var(--landing-space-2);
+    color: var(--landing-muted);
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+.landing-footer {
+    border-color: var(--landing-navy);
+    background: var(--landing-navy);
+}
+
+.landing-footer-inner {
+    gap: var(--landing-space-3);
+    padding-top: var(--landing-space-6);
+    padding-bottom: var(--landing-space-6);
+}
+
+.landing-footer-copy,
+.landing-footer-note {
+    color: var(--landing-footer-muted);
+    line-height: 1.6;
+}
+
+.landing-page a:focus-visible {
+    outline: 3px solid var(--landing-blue);
+    outline-offset: 3px;
+    box-shadow: none;
+}
+
+@media (min-width: 40rem) {
+    .landing-header {
+        padding-right: var(--landing-space-6);
+        padding-left: var(--landing-space-6);
+    }
+
+    .landing-main {
+        padding-top: var(--landing-space-16);
+    }
+
+    .landing-features {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .landing-footer-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding-right: var(--landing-space-6);
+        padding-left: var(--landing-space-6);
+    }
+}
+
+@media (min-width: 64rem) {
+    .landing-header {
+        padding-right: var(--landing-space-8);
+        padding-left: var(--landing-space-8);
+    }
+
+    .landing-main {
+        padding-top: 5rem;
+        padding-right: var(--landing-space-8);
+        padding-left: var(--landing-space-8);
+    }
+
+    .landing-hero {
+        grid-template-columns: minmax(0, 1.05fr) minmax(21rem, 0.95fr);
+        gap: var(--landing-space-8);
+    }
+
+    .landing-visual {
+        padding: var(--landing-space-4);
+    }
+
+    .landing-footer-inner {
+        padding-right: var(--landing-space-8);
+        padding-left: var(--landing-space-8);
+    }
+}
+
+@media (max-width: 24rem) {
+    .landing-header {
+        gap: var(--landing-space-2);
+    }
+
+    .landing-brand {
+        gap: var(--landing-space-2);
+    }
+
+    .landing-nav {
+        gap: var(--landing-space-1);
+    }
+
+    .landing-page .landing-nav-secondary,
+    .landing-page .landing-nav-primary {
+        padding-right: var(--landing-space-2);
+        padding-left: var(--landing-space-2);
+        font-size: 0.75rem;
+    }
+
+    .landing-visual {
+        padding: var(--landing-space-2);
+    }
+
+    .landing-visual-content {
+        padding-right: var(--landing-space-3);
+        padding-left: var(--landing-space-3);
+    }
+
+    .landing-visual-bottom {
+        gap: var(--landing-space-3);
+        font-size: 0.6875rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .landing-page *,
+    .landing-page *::before,
+    .landing-page *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .landing-page .btn-primary:hover {
+        transform: none;
+    }
+}
