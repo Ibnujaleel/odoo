@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvoicePdfController;
 use App\Http\Controllers\QuotationPdfController;
 use App\Livewire\Portal\Account;
 use App\Livewire\Portal\ActivateAccount;
@@ -15,6 +16,9 @@ Route::get('/activate/{token}', ActivateAccount::class)->name('portal.activate')
 
 // Quotation PDF route: authenticated staff and authorized owning customers
 Route::middleware(['auth'])->get('/portal/quotations/{subscription}/pdf', [QuotationPdfController::class, 'show'])->name('portal.quotations.pdf');
+
+// Invoice PDF route: authenticated staff and authorized owning customers
+Route::middleware(['auth'])->get('/portal/invoices/{invoice}/pdf', [InvoicePdfController::class, 'show'])->name('portal.invoices.pdf');
 
 Route::middleware(['auth', 'role:customer'])->prefix('portal')->name('portal.')->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');

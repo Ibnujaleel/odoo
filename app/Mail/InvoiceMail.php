@@ -15,9 +15,7 @@ class InvoiceMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Invoice $invoice)
-    {
-    }
+    public function __construct(public Invoice $invoice) {}
 
     public function envelope(): Envelope
     {
