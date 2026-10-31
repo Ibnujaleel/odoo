@@ -2,12 +2,16 @@
 
 use App\Http\Controllers\QuotationPdfController;
 use App\Livewire\Portal\Account;
+use App\Livewire\Portal\ActivateAccount;
 use App\Livewire\Portal\Dashboard;
 use App\Livewire\Portal\Invoices;
 use App\Livewire\Portal\Quotations;
 use App\Livewire\Portal\QuotationShow;
 use App\Livewire\Portal\Subscriptions;
 use Illuminate\Support\Facades\Route;
+
+// Public invitation activation link
+Route::get('/activate/{token}', ActivateAccount::class)->name('portal.activate');
 
 // Quotation PDF route: authenticated staff and authorized owning customers
 Route::middleware(['auth'])->get('/portal/quotations/{subscription}/pdf', [QuotationPdfController::class, 'show'])->name('portal.quotations.pdf');
